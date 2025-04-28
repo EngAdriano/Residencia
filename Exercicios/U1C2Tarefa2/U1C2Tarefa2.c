@@ -26,7 +26,6 @@ QueueHandle_t xQueueLed; // Fila para comunicação entre tarefas
 void vTaskButtonRead(void *pvParameters);
 void vTaskButtonProcess(void *pvParameters);
 void vTaskControlLed(void *pvParameters);
-void vInitTasks(void);
 void InitPins(void);
 
 
@@ -47,20 +46,15 @@ int main()
         return 1; // Retorna erro se não conseguiu criar a fila
     }
 
-    vInitTasks(); // Inicializa as tarefas do FreeRTOS
+    xTaskCreate(vTaskButtonRead, "Leitura Botao", 1000, NULL, 1, NULL);
+    xTaskCreate(vTaskButtonProcess, "Processamento Botao", 1000, NULL, 1, NULL);
+    xTaskCreate(vTaskControlLed, "Controle Led", 1000, NULL, 1, NULL);
     vTaskStartScheduler(); // Inicia o agendador do FreeRTOS
 
     return 0; // O código não deve chegar aqui, pois o agendador do FreeRTOS assume o controle  
 }
 
 /*********************************************************************************************************************** */
-// Área de inicialização das tarefas
-// Cria as tarefas de leitura do botão, processamento do botão e controle do LED
-void vInitTasks(void) {
-    xTaskCreate(vTaskButtonRead, "Leitura Botao", 1000, NULL, 1, NULL);
-    xTaskCreate(vTaskButtonProcess, "Processamento Botao", 1000, NULL, 1, NULL);
-    xTaskCreate(vTaskControlLed, "Controle Led", 1000, NULL, 1, NULL);
-}
 
 // Inicializa os pinos do LED e do botão
 void InitPins(void) {
