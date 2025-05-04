@@ -2,8 +2,8 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 
-#define WIFI_SSID "Lu e Deza"  // Substitua pelo nome da sua rede Wi-Fi
-#define WIFI_PASS "liukin1208" // Substitua pela senha da sua rede Wi-Fi
+#define WIFI_SSID "Seu SSID"  // Substitua pelo nome da sua rede Wi-Fi
+#define WIFI_PASS "Sua Senha" // Substitua pela senha da sua rede Wi-Fi
 
 
 int main()
