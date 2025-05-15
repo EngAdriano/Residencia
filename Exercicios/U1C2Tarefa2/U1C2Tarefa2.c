@@ -29,8 +29,8 @@ int8_t buttonState = 0;         // Variável para armazenar o estado do botão
 int8_t ultimoButtonState = 0;   // Variável para armazenar o último estado do botão
 
 // Definições de Semáforos e Filas
-SemaphoreHandle_t xNotificacaoButton; // Semáforo para sincronização entre tarefas
-QueueHandle_t xQueueLed;        // Fila para comunicação entre tarefas
+SemaphoreHandle_t xNotificacaoButton;   // Semáforo para sincronização entre tarefas
+QueueHandle_t xQueueLed;                // Fila para comunicação entre tarefas
 
 //Protótipo das funções
 void vTaskButtonRead(void *pvParameters);

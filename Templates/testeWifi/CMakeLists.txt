@@ -46,12 +46,15 @@ pico_enable_stdio_usb(testeWifi 1)
 
 # Add the standard library to the build
 target_link_libraries(testeWifi
-        pico_stdlib)
+        pico_stdlib
+        pico_lwip)
 
 # Add the standard include files to the build
 target_include_directories(testeWifi PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
+
+target_sources(testeWifi PRIVATE ${PICO_SDK_PATH}/lib/lwip/src/apps/mqtt/mqtt.c)
 
 # Add any user requested libraries
 target_link_libraries(testeWifi 
