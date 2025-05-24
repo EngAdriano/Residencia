@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 const char* html_page =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html\r\n\r\n"
@@ -56,9 +57,9 @@ const char* html_page =
 "  </script>\n"
 "</body>\n"
 "</html>\n";
+*/
 
 
-/*
 const char *html_page =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html\r\n\r\n"
@@ -77,4 +78,3 @@ const char *html_page =
 "</script>\n"
 "</body>\n"
 "</html>\n";
-*/
