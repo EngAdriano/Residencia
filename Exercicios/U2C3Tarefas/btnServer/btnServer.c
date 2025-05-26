@@ -12,39 +12,39 @@
 int gpio_status = 0;
 
 // Handler de requisições
-err_t http_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err) {
-    if (!p) {
+err_t http_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuffer, err_t err) {
+    if (!pbuffer) {
         tcp_close(tpcb);
         return ERR_OK;
     }
 
-    tcp_recved(tpcb, p->tot_len);
+    tcp_recved(tpcb, pbuffer->tot_len);
 
-    char *req = calloc(p->len + 1, 1);
-    memcpy(req, p->payload, p->len);
-    req[p->len] = '\0';
+    char *req = calloc(pbuffer->len + 1, 1);
+    memcpy(req, pbuffer->payload, pbuffer->len);
+    req[pbuffer->len] = '\0';
 
-    printf("[INFO] Requisição recebida:\n%s\n", req);
+    printf("Requisição recebida:\n%s\n", req);
 
     // Verifica se a requisição é do tipo GET
     if (strstr(req, "GET /status")) {
         char resp[64];
         const char *estado = gpio_status ? "PRESSIONADO" : "LIBERADO";
 
-        printf("[INFO] Status do botão: %s\n", estado);
+        printf("Status do botão: %s\n", estado);
 
         sprintf(resp,
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n%s", estado);
         tcp_write(tpcb, resp, strlen(resp), TCP_WRITE_FLAG_COPY);
     } else {
-        printf("[INFO] Enviando página HTML inicial\n");
+        printf("Enviando página HTML inicial\n");
         tcp_write(tpcb, html_page, strlen(html_page), TCP_WRITE_FLAG_COPY);
     }
 
     tcp_output(tpcb);        // envia os dados
     tcp_close(tpcb);         // fecha a conexão corretamente
     free(req);               // libera memória alocada
-    pbuf_free(p);            // libera o buffer de recepção  
+    pbuf_free(pbuffer);            // libera o buffer de recepção  
     return ERR_OK;
 }
 
@@ -75,19 +75,19 @@ int main() {
     gpio_pull_up(GPIO_BUTTON); // botão entre GPIO e GND
 
     if (cyw43_arch_init()) {
-        printf("[ERRO] Falha ao iniciar Wi-Fi\n");
+        printf("Falha ao iniciar Wi-Fi\n");
         return 1;
     }
 
     cyw43_arch_enable_sta_mode();
     // Configura o Wi-Fi em modo STA
     if (cyw43_arch_wifi_connect_timeout_ms(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-        printf("[ERRO] Falha na conexão Wi-Fi\n");
+        printf("Falha na conexão Wi-Fi\n");
         return 1;
     }
     
     // Aguarda o IP ser atribuído
-    printf("[INFO] Conectado à rede. IP: %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+    printf("Conectado à rede. IP: %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
 
     // Inicializa o servidor
     start_server();
