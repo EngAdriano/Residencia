@@ -20,6 +20,7 @@ err_t http_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuffer, er
 
     tcp_recved(tpcb, pbuffer->tot_len);
 
+    // Verifica se a requisição é válida
     char *req = calloc(pbuffer->len + 1, 1);
     memcpy(req, pbuffer->payload, pbuffer->len);
     req[pbuffer->len] = '\0';
@@ -33,8 +34,7 @@ err_t http_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuffer, er
 
         printf("Status do botão: %s\n", estado);
 
-        sprintf(resp,
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n%s", estado);
+        sprintf(resp, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n%s", estado);
         tcp_write(tpcb, resp, strlen(resp), TCP_WRITE_FLAG_COPY);
     } else {
         printf("Enviando página HTML inicial\n");
@@ -44,7 +44,7 @@ err_t http_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *pbuffer, er
     tcp_output(tpcb);        // envia os dados
     tcp_close(tpcb);         // fecha a conexão corretamente
     free(req);               // libera memória alocada
-    pbuf_free(pbuffer);            // libera o buffer de recepção  
+    pbuf_free(pbuffer);      // libera o buffer de recepção  
     return ERR_OK;
 }
 
@@ -58,6 +58,7 @@ err_t http_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
 
 // Inicializa o servidor
 // Cria um PCB TCP, escuta na porta 80 e aceita conexões
+// PCB (Protocol Control Block) é uma estrutura de dados usada pelo LwIP para gerenciar conexões TCP
 void start_server() {
     struct tcp_pcb *pcb = tcp_new();
     tcp_bind(pcb, IP_ADDR_ANY, PORT);
@@ -79,8 +80,9 @@ int main() {
         return 1;
     }
 
-    cyw43_arch_enable_sta_mode();
     // Configura o Wi-Fi em modo STA
+    cyw43_arch_enable_sta_mode();
+    
     if (cyw43_arch_wifi_connect_timeout_ms(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
         printf("Falha na conexão Wi-Fi\n");
         return 1;
