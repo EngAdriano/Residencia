@@ -1,3 +1,14 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: Sensor de Botão e Temperatura com Wi-Fi
+/ Descrição: Este código lê a temperatura do sensor e o estado de um botão, enviando os dados via HTTP POST para um servidor na nuvem.
+/ Hardware: Raspberry Pi Pico W
+/ Bibliotecas: pico-sdk, lwIP, CYW43
+/ Autor: José Adriano
+/ Data de Criação: 01/10/2023
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
+
+// Bibliotecas necessárias
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
@@ -20,6 +31,63 @@
 #define BUTTON_PIN 5
 #define ADC_TEMP 4
 
+//Protótipos das funções
+float ler_temperatura();
+const char* ler_botao();
+void enviar_http_post(const char* payload);
+
+// Função principal
+// Inicializa o Wi-Fi, lê temperatura e estado do botão, envia dados via HTTP POST
+int main() {
+    stdio_init_all();
+    sleep_ms(2000);
+    printf("Iniciando...\n");
+
+    gpio_init(BUTTON_PIN);
+    gpio_set_dir(BUTTON_PIN, GPIO_IN);
+    gpio_pull_up(BUTTON_PIN);
+
+    adc_init();
+    adc_set_temp_sensor_enabled(true);
+
+    if (cyw43_arch_init()) {
+        printf("Erro ao inicializar Wi-Fi\n");
+        return -1;
+    }
+
+    cyw43_arch_enable_sta_mode();
+
+    printf("Conectando ao Wi-Fi...\n");
+    if (cyw43_arch_wifi_connect_timeout_ms(
+            WIFI_SSID, WIFI_PASSWORD,
+            CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+        printf("Falha ao conectar ao Wi-Fi\n");
+        return -1;
+    }
+
+    printf("Wi-Fi conectado!\n");
+
+    while (true) {
+        float temp = ler_temperatura();
+        const char* botao = ler_botao();
+
+        char payload[128];
+        snprintf(payload, sizeof(payload),
+                 "Temperatura: %.2f C, Botao: %s", temp, botao);
+
+        enviar_http_post(payload);
+        sleep_ms(5000); // aguarda 5s
+    }
+
+    cyw43_arch_deinit();
+    return 0;
+}
+
+//----------------------------------------------------------------------------------------------
+// Implementação das funções
+//----------------------------------------------------------------------------------------------
+
+// Lê a temperatura do sensor e converte para Celsius
 float ler_temperatura() {
     adc_select_input(ADC_TEMP);
     uint16_t raw = adc_read();
@@ -27,10 +95,12 @@ float ler_temperatura() {
     return 27.0f - (volts - 0.706f) / 0.001721f;
 }
 
+// Lê o estado do botão (pressionado ou liberado)
 const char* ler_botao() {
     return gpio_get(BUTTON_PIN) ? "LIBERADO" : "PRESSIONADO";
 }
 
+// Envia os dados via HTTP POST para o servidor
 void enviar_http_post(const char* payload) {
     struct tcp_pcb *pcb = tcp_new_ip_type(IPADDR_TYPE_V4);
     if (!pcb) {
@@ -67,59 +137,15 @@ void enviar_http_post(const char* payload) {
         WEBHOOK_PATH, WEBHOOK_HOST, strlen(payload), payload
     );
 
+    // Envia a requisição HTTP POST
     err = tcp_write(pcb, requisicao, strlen(requisicao), TCP_WRITE_FLAG_COPY);
     if (err == ERR_OK) {
         tcp_output(pcb);
-        printf("📤 Enviado: %s\n", payload);
+        printf("Enviado: %s\n", payload);
     } else {
         printf("Erro ao escrever TCP: %d\n", err);
     }
 
     sleep_ms(500);
     tcp_close(pcb);
-}
-
-int main() {
-    stdio_init_all();
-    sleep_ms(2000);
-    printf("Iniciando...\n");
-
-    gpio_init(BUTTON_PIN);
-    gpio_set_dir(BUTTON_PIN, GPIO_IN);
-    gpio_pull_up(BUTTON_PIN);
-
-    adc_init();
-    adc_set_temp_sensor_enabled(true);
-
-    if (cyw43_arch_init()) {
-        printf("Erro ao inicializar Wi-Fi\n");
-        return -1;
-    }
-
-    cyw43_arch_enable_sta_mode();
-
-    printf("Conectando ao Wi-Fi...\n");
-    if (cyw43_arch_wifi_connect_timeout_ms(
-            WIFI_SSID, WIFI_PASSWORD,
-            CYW43_AUTH_WPA2_AES_PSK, 30000)) {
-        printf("❌ Falha ao conectar ao Wi-Fi\n");
-        return -1;
-    }
-
-    printf("✅ Wi-Fi conectado!\n");
-
-    while (true) {
-        float temp = ler_temperatura();
-        const char* botao = ler_botao();
-
-        char payload[128];
-        snprintf(payload, sizeof(payload),
-                 "Temperatura: %.2f C, Botao: %s", temp, botao);
-
-        enviar_http_post(payload);
-        sleep_ms(5000); // aguarda 5s
-    }
-
-    cyw43_arch_deinit();
-    return 0;
 }
