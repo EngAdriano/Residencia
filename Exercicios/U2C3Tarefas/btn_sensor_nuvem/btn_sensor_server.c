@@ -11,7 +11,7 @@
 #define WIFI_SSID "Lu e Deza"
 #define WIFI_PASSWORD "liukin1208"
 
-// Webhook.site
+// Webhook.site - Servidor em nuvem para receber dados
 #define WEBHOOK_HOST "webhook.site"
 #define WEBHOOK_PATH "/32a77e20-204e-46f1-b195-b5632fbd9e4c"
 #define WEBHOOK_PORT 80
