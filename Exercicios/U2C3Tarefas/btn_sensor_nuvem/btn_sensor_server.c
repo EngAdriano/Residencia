@@ -108,6 +108,7 @@ void enviar_http_post(const char* payload) {
         return;
     }
 
+    // Configura o PCB para não usar Nagle (para enviar imediatamente)
     ip_addr_t ip_dest;
     err_t dns_err = dns_gethostbyname(WEBHOOK_HOST, &ip_dest, NULL, NULL);
     if (dns_err != ERR_OK) {
@@ -116,6 +117,7 @@ void enviar_http_post(const char* payload) {
         return;
     }
 
+    // Conecta ao servidor
     err_t err = tcp_connect(pcb, &ip_dest, WEBHOOK_PORT, NULL);
     if (err != ERR_OK) {
         printf("Erro ao conectar TCP (%d)\n", err);
@@ -125,6 +127,7 @@ void enviar_http_post(const char* payload) {
 
     sleep_ms(500); // espera estabilizar
 
+    // Monta a requisição HTTP POST
     char requisicao[512];
     snprintf(requisicao, sizeof(requisicao),
         "POST %s HTTP/1.1\r\n"
@@ -146,6 +149,7 @@ void enviar_http_post(const char* payload) {
         printf("Erro ao escrever TCP: %d\n", err);
     }
 
+    // Aguarda a resposta do servidor
     sleep_ms(500);
     tcp_close(pcb);
 }
