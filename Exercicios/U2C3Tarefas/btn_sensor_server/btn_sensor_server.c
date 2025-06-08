@@ -8,8 +8,8 @@
 #include "lwip/udp.h"
 #include "lwip/ip_addr.h"
 
-#define WIFI_SSID "Lu e Deza"       // Nome da rede Wi-Fi
-#define WIFI_PASSWORD "liukin1208"  // Senha da rede Wi-Fi
+#define WIFI_SSID "xxxxxxxxx"       // Nome da rede Wi-Fi
+#define WIFI_PASSWORD "xxxxxxxxx"  // Senha da rede Wi-Fi
 
 #define SERVER_IP "192.168.1.28"    // IP do servidor para onde enviar os dados
 #define SERVER_PORT 34567            // Porta do servidor

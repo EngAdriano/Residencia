@@ -56,6 +56,7 @@ target_include_directories(RosaDosVentos PRIVATE
 # Add any user requested libraries
 target_link_libraries(RosaDosVentos 
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip
         hardware_adc
         )
 

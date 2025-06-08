@@ -12,7 +12,7 @@
 
 // IP do servidor UDP
 #define SERVER_IP "192.168.1.28"
-#define SERVER_PORT 12345
+#define SERVER_PORT 34567
 
 // Pinos do joystick
 #define ADC_PIN_X 26 // GP26 -> ADC0
