@@ -3,7 +3,7 @@
         "ms-vscode.cpptools-extension-pack",
         "raspberry-pi.raspberry-pi-pico",
         "ms-vscode.vscode-serial-monitor",
-        "ms-vscode.cpptools",
-        "marus25.cortex-debug"
+        "marus25.cortex-debug",
+        "ms-vscode.cpptools"
     ]
 }
