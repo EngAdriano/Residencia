@@ -4,6 +4,14 @@
 // Common settings used in most of the pico_w examples
 // (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html for details)
 
+// Habilita o uso do MQTT
+#define LWIP_ALTCP                   1
+#define LWIP_ALTCP_TLS               0
+#define LWIP_MQTT                    1
+
+// Tamanho das pools de memória
+#define MEMP_NUM_SYS_TIMEOUT         12  // Aumente conforme necessidade
+
 // allow override in some examples
 #ifndef NO_SYS
 #define NO_SYS                      1
@@ -16,10 +24,18 @@
 #define MEM_LIBC_MALLOC             1
 #else
 // MEM_LIBC_MALLOC is incompatible with non polling versions
+// Ajustes básicos recomendados
+
+#define MEMP_NUM_TCP_PCB              5
+#define MEMP_NUM_TCP_PCB_LISTEN       5
+
+#define MEMP_NUM_NETCONN              10
+#define MEMP_NUM_API_MSG              10
+
 #define MEM_LIBC_MALLOC             0
 #endif
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    4000
+#define MEM_SIZE                    10000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
 #define PBUF_POOL_SIZE              24

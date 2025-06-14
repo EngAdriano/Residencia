@@ -28,6 +28,10 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
+# Habilitar o suporte para MQTT
+set(PICO_CYW43_ARCH_LWIP_POLL 1)
+set(PICO_LWIP_ENABLE_MQTT 1)
+
 project(btnMQTT C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
@@ -35,7 +39,9 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(btnMQTT btnMQTT.c )
+add_executable(btnMQTT btnMQTT.c 
+    C:/Users/Adriano/.pico-sdk/sdk/2.1.1/lib/lwip/src/apps/mqtt/mqtt.c
+    )
 
 pico_set_program_name(btnMQTT "btnMQTT")
 pico_set_program_version(btnMQTT "0.1")
