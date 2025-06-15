@@ -28,41 +28,36 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-# Habilitar o suporte para MQTT
-set(PICO_CYW43_ARCH_LWIP_POLL 1)
-set(PICO_LWIP_ENABLE_MQTT 1)
-
-project(btnMQTT C CXX ASM)
+project(button_mqtt C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(btnMQTT btnMQTT.c 
-    C:/Users/Adriano/.pico-sdk/sdk/2.1.1/lib/lwip/src/apps/mqtt/mqtt.c
-    )
+add_executable(button_mqtt button_mqtt.c )
 
-pico_set_program_name(btnMQTT "btnMQTT")
-pico_set_program_version(btnMQTT "0.1")
+pico_set_program_name(button_mqtt "button_mqtt")
+pico_set_program_version(button_mqtt "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(btnMQTT 0)
-pico_enable_stdio_usb(btnMQTT 1)
+pico_enable_stdio_uart(button_mqtt 0)
+pico_enable_stdio_usb(button_mqtt 1)
 
 # Add the standard library to the build
-target_link_libraries(btnMQTT
+target_link_libraries(button_mqtt
         pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(btnMQTT PRIVATE
+target_include_directories(button_mqtt PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(btnMQTT 
+target_link_libraries(button_mqtt 
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip_mqtt
         )
 
-pico_add_extra_outputs(btnMQTT)
+pico_add_extra_outputs(button_mqtt)
 
