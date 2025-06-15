@@ -7,56 +7,75 @@
 #include "lwip/ip_addr.h"
 #include "lwip/dns.h"
 
-// 🛜 Wi-Fi credentials
+// ========================
+// Configurações Wi-Fi
+// ========================
 #define WIFI_SSID "Lu e Deza"
 #define WIFI_PASSWORD "liukin1208"
 
-// 🔗 MQTT Broker (usando hostname)
+// ========================
+// Configurações MQTT
+// ========================
 #define MQTT_BROKER "broker.hivemq.com"
-#define MQTT_BROKER_PORT 1883  // ⚠️ Nome alterado para evitar conflito
+#define MQTT_BROKER_PORT 1883
 
-// 🚦 GPIO do botão
+#define MQTT_TOPIC "pico/button"
+
+// ========================
+// Configurações do Botão
+// ========================
 #define BUTTON_GPIO 5
 
-// Variáveis globais
+// ========================
+// Variáveis Globais
+// ========================
 static mqtt_client_t *mqtt_client;
-static bool button_last_state = false;
 static ip_addr_t broker_ip;
 static bool mqtt_connected = false;
+static bool button_last_state = false;
 
-// 🟢 Callback de conexão MQTT
+// ========================
+// Callback de conexão MQTT
+// ========================
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
     if (status == MQTT_CONNECT_ACCEPTED) {
-        printf("Conectado ao broker MQTT!\n");
+        printf("[MQTT] Conectado ao broker!\n");
         mqtt_connected = true;
     } else {
-        printf("Falha na conexão MQTT. Código: %d\n", status);
+        printf("[MQTT] Falha na conexão MQTT. Código: %d\n", status);
         mqtt_connected = false;
     }
 }
 
-// 🚀 Publica o estado do botão
+// ========================
+// Publicar estado do botão
+// ========================
 void publish_button_state(bool pressed) {
-    if (!mqtt_connected) return;
+    if (!mqtt_connected) {
+        printf("[MQTT] Não conectado, não publicando\n");
+        return;
+    }
 
-    const char *topic = "pico/button";
     const char *message = pressed ? "ON" : "OFF";
 
-    err_t err = mqtt_publish(mqtt_client, topic, message, strlen(message), 0, 0, NULL, NULL);
+    printf("[MQTT] Publicando: tópico='%s', mensagem='%s'\n", MQTT_TOPIC, message);
+
+    err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC, message, strlen(message), 0, 0, NULL, NULL);
     if (err == ERR_OK) {
-        printf("Publicado: %s\n", message);
+        printf("[MQTT] Publicação enviada com sucesso\n");
     } else {
-        printf("Erro ao publicar: %d\n", err);
+        printf("[MQTT] Erro ao publicar: %d\n", err);
     }
 }
 
-// 🔍 Callback de DNS (nome ajustado para não conflitar)
+// ========================
+// Callback de DNS
+// ========================
 void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
     if (ipaddr != NULL) {
         broker_ip = *ipaddr;
-        printf("DNS resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
+        printf("[DNS] Resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
 
-        // Informações da conexão MQTT
         struct mqtt_connect_client_info_t ci = {
             .client_id = "pico-client",
             .keep_alive = 60,
@@ -68,66 +87,74 @@ void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg)
             .will_retain = 0
         };
 
-        // 🔗 Conectar ao broker MQTT
+        printf("[MQTT] Conectando ao broker...\n");
         mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_cb, NULL, &ci);
     } else {
-        printf("Falha ao resolver DNS para %s\n", name);
+        printf("[DNS] Falha ao resolver DNS para %s\n", name);
     }
 }
 
+// ========================
+// Função Principal
+// ========================
 int main() {
     stdio_init_all();
     sleep_ms(2000);
-    printf("Iniciando...\n");
+    printf("\n=== Iniciando MQTT Button Monitor ===\n");
 
-    // 🛜 Inicializar Wi-Fi
+    // Inicializa Wi-Fi
     if (cyw43_arch_init()) {
         printf("Erro na inicialização do Wi-Fi\n");
         return -1;
     }
     cyw43_arch_enable_sta_mode();
 
-    printf("Conectando ao Wi-Fi...\n");
+    printf("[Wi-Fi] Conectando...\n");
     if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-        printf("Erro na conexão Wi-Fi\n");
+        printf("[Wi-Fi] Falha na conexão Wi-Fi\n");
         return -1;
     } else {
-        printf("Wi-Fi conectado com sucesso!\n");
+        printf("[Wi-Fi] Conectado com sucesso!\n");
     }
 
-    // 🚦 Configurar GPIO do botão
+    // Configura GPIO do botão
     gpio_init(BUTTON_GPIO);
     gpio_set_dir(BUTTON_GPIO, GPIO_IN);
-    gpio_pull_down(BUTTON_GPIO);
+    gpio_pull_up(BUTTON_GPIO); // <<< ATENÇÃO: pull-up ativado
 
-    // 🔧 Criar cliente MQTT
+    // Inicializa cliente MQTT
     mqtt_client = mqtt_client_new();
 
-    // 🔍 Resolver DNS e conectar
+    // Resolve DNS do broker MQTT
     err_t err = dns_gethostbyname(MQTT_BROKER, &broker_ip, dns_found_cb, NULL);
     if (err == ERR_OK) {
-        // DNS já estava no cache
         dns_found_cb(MQTT_BROKER, &broker_ip, NULL);
     } else if (err == ERR_INPROGRESS) {
-        printf("Resolvendo DNS...\n");
+        printf("[DNS] Resolvendo...\n");
     } else {
-        printf("Erro ao iniciar resolução DNS: %d\n", err);
+        printf("[DNS] Erro ao resolver DNS: %d\n", err);
         return -1;
     }
 
-    // 🔁 Loop principal
+    // Loop principal
     while (true) {
-        bool button_state = gpio_get(BUTTON_GPIO);
+        // Atualiza tarefas de rede
+        cyw43_arch_poll();
 
+        // Lê o estado do botão
+        bool button_state = !gpio_get(BUTTON_GPIO); // <<< Inverte porque é pull-up
+
+        // Se mudou de estado, publica
         if (button_state != button_last_state) {
+            printf("[BOTÃO] Estado mudou para: %s\n", button_state ? "ON" : "OFF");
             publish_button_state(button_state);
             button_last_state = button_state;
         }
 
-        sleep_ms(500);
+        sleep_ms(200); // Ajuste conforme desejado
     }
 
-    // 🚪 Encerrar (não chega aqui normalmente)
+    // Finaliza (nunca chega aqui)
     cyw43_arch_deinit();
     return 0;
 }
