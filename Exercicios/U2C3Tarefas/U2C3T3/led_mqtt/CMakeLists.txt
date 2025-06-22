@@ -56,6 +56,7 @@ target_include_directories(led_mqtt PRIVATE
 # Add any user requested libraries
 target_link_libraries(led_mqtt 
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip_mqtt
         )
 
 pico_add_extra_outputs(led_mqtt)
