@@ -129,7 +129,7 @@ void publish_msg(bool button_pressed, float temp_c) {
 
     char payload[128];
     snprintf(payload, sizeof(payload),
-             "{\"button\":\"%s\",\"temperature\":%.2f}",
+             "{\"botao\":\"%s\",\"temperatura\":%.2f}",
              button_pressed ? "ON" : "OFF",
              temp_c);
 
@@ -158,7 +158,7 @@ void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callbac
         broker_ip = *ipaddr;
         printf("[DNS] Resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
 
-        struct mqtt_connect_client_info_t ci = {
+        struct mqtt_connect_client_info_t client_info = {
             .client_id = "pico-client",
             .keep_alive = 60,
             .client_user = NULL,
@@ -170,7 +170,7 @@ void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callbac
         };
 
         printf("[MQTT] Conectando ao broker...\n");
-        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_callback, NULL, &ci);
+        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_callback, NULL, &client_info);
     } else {
         printf("[DNS] Falha ao resolver DNS para %s\n", name);
     }
