@@ -7,8 +7,8 @@
 #include "lwip/ip_addr.h"
 
 // Configurações do Wi-Fi
-#define WIFI_SSID "Lu e Deza"
-#define WIFI_PASSWORD "liukin1208"
+#define WIFI_SSID "xxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxx"
 
 // IP do servidor UDP
 #define SERVER_IP "192.168.1.28"
