@@ -1,12 +1,11 @@
 /* ----------------------------------------------------------------------------------------------------------------
-/ Projeto: Botão + Controle de LED via MQTT
-/ Descrição: Publica o estado do botão (GPIO5) e recebe comandos para ligar/desligar um LED (GPIO12) via MQTT.
-/ Autor: José Adriano
-/ Data: 22/06/2025
+/ Projeto: Botão + Controle de LED via MQTT com JSON
+/ Descrição: Publica estado do botão (GPIO5) e recebe comandos JSON para ligar/desligar um LED (GPIO12).
 / ----------------------------------------------------------------------------------------------------------------
 */
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "pico/cyw43_arch.h"
@@ -39,12 +38,13 @@ void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len);
 void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
 void publish_button_state(bool pressed);
 void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callback_arg);
+void parse_json_and_control_led(const char *json_msg);
 
 // =================== Função Principal ===================
 int main() {
     stdio_init_all();
     sleep_ms(2000);
-    printf("\n=== Iniciando MQTT Button + LED ===\n");
+    printf("\n=== Iniciando MQTT Button + LED com JSON ===\n");
 
     // Inicializa Wi-Fi
     if (cyw43_arch_init()) {
@@ -128,7 +128,7 @@ static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_conn
     }
 }
 
-// =================== MQTT - Callback de Publicação ===================
+// =================== MQTT - Publicação ===================
 void publish_button_state(bool pressed) {
     if (!mqtt_connected) {
         printf("[MQTT] Não conectado, não publicando\n");
@@ -147,7 +147,7 @@ void publish_button_state(bool pressed) {
     }
 }
 
-// =================== MQTT - Callback de Mensagens Recebidas ===================
+// =================== MQTT - Mensagens Recebidas ===================
 void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) {
     printf("[MQTT] Mensagem recebida no tópico: %s (tamanho: %lu)\n", topic, (unsigned long)tot_len);
 }
@@ -159,14 +159,26 @@ void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
 
     printf("[MQTT] Dados recebidos: %s\n", msg);
 
-    if (strcmp(msg, "ON") == 0) {
-        gpio_put(LED_GPIO, 1);
-        printf("[LED] Ligado\n");
-    } else if (strcmp(msg, "OFF") == 0) {
-        gpio_put(LED_GPIO, 0);
-        printf("[LED] Desligado\n");
+    parse_json_and_control_led(msg);
+}
+
+// =================== JSON Parser Simples ===================
+void parse_json_and_control_led(const char *json_msg) {
+    const char *led_key = "\"led\":\"";
+    char *found = strstr(json_msg, led_key);
+    if (found) {
+        found += strlen(led_key);
+        if (strncmp(found, "ON", 2) == 0) {
+            gpio_put(LED_GPIO, 1);
+            printf("[LED] Ligado via JSON\n");
+        } else if (strncmp(found, "OFF", 3) == 0) {
+            gpio_put(LED_GPIO, 0);
+            printf("[LED] Desligado via JSON\n");
+        } else {
+            printf("[LED] Comando inválido no JSON\n");
+        }
     } else {
-        printf("[LED] Comando desconhecido: %s\n", msg);
+        printf("[JSON] Comando 'led' não encontrado\n");
     }
 }
 
