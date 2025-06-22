@@ -1,3 +1,13 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: Botão MQTT
+/ Descrição: Este código lê o estado de um botão, enviando o status para um broker MQTT.
+/ Bibliotecas: pico-sdk, lwIP, CYW43
+/ Autor: José Adriano
+/ Obs_1: A parte do DNS foi adaptada de códigos de exemplos encontrado na internet.
+/ Obs_2: Necessário efetuar ajustes nos arquivos CMakeLists.txt e lwipopts.h para compilar corretamente.
+/ Data de Criação: 22/06/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
@@ -7,96 +17,31 @@
 #include "lwip/ip_addr.h"
 #include "lwip/dns.h"
 
-// ========================
 // Configurações Wi-Fi
-// ========================
 #define WIFI_SSID "Lu e Deza"
 #define WIFI_PASSWORD "liukin1208"
 
-// ========================
 // Configurações MQTT
-// ========================
 #define MQTT_BROKER "broker.hivemq.com"
 #define MQTT_BROKER_PORT 1883
 
 #define MQTT_TOPIC "pico/button"
 
-// ========================
 // Configurações do Botão
-// ========================
 #define BUTTON_GPIO 5
 
-// ========================
 // Variáveis Globais
-// ========================
 static mqtt_client_t *mqtt_client;
 static ip_addr_t broker_ip;
 static bool mqtt_connected = false;
 static bool button_last_state = false;
 
-// ========================
-// Callback de conexão MQTT
-// ========================
-static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
-    if (status == MQTT_CONNECT_ACCEPTED) {
-        printf("[MQTT] Conectado ao broker!\n");
-        mqtt_connected = true;
-    } else {
-        printf("[MQTT] Falha na conexão MQTT. Código: %d\n", status);
-        mqtt_connected = false;
-    }
-}
+// Protótipos de Funções
+static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
+void publish_button_state(bool pressed);
+void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callback_arg);
 
-// ========================
-// Publicar estado do botão
-// ========================
-void publish_button_state(bool pressed) {
-    if (!mqtt_connected) {
-        printf("[MQTT] Não conectado, não publicando\n");
-        return;
-    }
-
-    const char *message = pressed ? "ON" : "OFF";
-
-    printf("[MQTT] Publicando: tópico='%s', mensagem='%s'\n", MQTT_TOPIC, message);
-
-    err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC, message, strlen(message), 0, 0, NULL, NULL);
-    if (err == ERR_OK) {
-        printf("[MQTT] Publicação enviada com sucesso\n");
-    } else {
-        printf("[MQTT] Erro ao publicar: %d\n", err);
-    }
-}
-
-// ========================
-// Callback de DNS
-// ========================
-void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
-    if (ipaddr != NULL) {
-        broker_ip = *ipaddr;
-        printf("[DNS] Resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
-
-        struct mqtt_connect_client_info_t ci = {
-            .client_id = "pico-client",
-            .keep_alive = 60,
-            .client_user = NULL,
-            .client_pass = NULL,
-            .will_topic = NULL,
-            .will_msg = NULL,
-            .will_qos = 0,
-            .will_retain = 0
-        };
-
-        printf("[MQTT] Conectando ao broker...\n");
-        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_cb, NULL, &ci);
-    } else {
-        printf("[DNS] Falha ao resolver DNS para %s\n", name);
-    }
-}
-
-// ========================
 // Função Principal
-// ========================
 int main() {
     stdio_init_all();
     sleep_ms(2000);
@@ -126,9 +71,9 @@ int main() {
     mqtt_client = mqtt_client_new();
 
     // Resolve DNS do broker MQTT
-    err_t err = dns_gethostbyname(MQTT_BROKER, &broker_ip, dns_found_cb, NULL);
+    err_t err = dns_gethostbyname(MQTT_BROKER, &broker_ip, dns_check_callback, NULL);
     if (err == ERR_OK) {
-        dns_found_cb(MQTT_BROKER, &broker_ip, NULL);
+        dns_check_callback(MQTT_BROKER, &broker_ip, NULL);
     } else if (err == ERR_INPROGRESS) {
         printf("[DNS] Resolvendo...\n");
     } else {
@@ -157,4 +102,58 @@ int main() {
     // Finaliza (nunca chega aqui)
     cyw43_arch_deinit();
     return 0;
+}
+
+// Callback de conexão MQTT
+static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
+    if (status == MQTT_CONNECT_ACCEPTED) {
+        printf("[MQTT] Conectado ao broker!\n");
+        mqtt_connected = true;
+    } else {
+        printf("[MQTT] Falha na conexão MQTT. Código: %d\n", status);
+        mqtt_connected = false;
+    }
+}
+
+// Publicar estado do botão
+void publish_button_state(bool pressed) {
+    if (!mqtt_connected) {
+        printf("[MQTT] Não conectado, não publicando\n");
+        return;
+    }
+
+    const char *message = pressed ? "ON" : "OFF";
+
+    printf("[MQTT] Publicando: tópico='%s', mensagem='%s'\n", MQTT_TOPIC, message);
+
+    err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC, message, strlen(message), 0, 0, NULL, NULL);
+    if (err == ERR_OK) {
+        printf("[MQTT] Publicação enviada com sucesso\n");
+    } else {
+        printf("[MQTT] Erro ao publicar: %d\n", err);
+    }
+}
+
+// Callback de DNS
+void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
+    if (ipaddr != NULL) {
+        broker_ip = *ipaddr;
+        printf("[DNS] Resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
+
+        struct mqtt_connect_client_info_t ci = {
+            .client_id = "pico-client",
+            .keep_alive = 60,
+            .client_user = NULL,
+            .client_pass = NULL,
+            .will_topic = NULL,
+            .will_msg = NULL,
+            .will_qos = 0,
+            .will_retain = 0
+        };
+
+        printf("[MQTT] Conectando ao broker...\n");
+        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_callback, NULL, &ci);
+    } else {
+        printf("[DNS] Falha ao resolver DNS para %s\n", name);
+    }
 }
