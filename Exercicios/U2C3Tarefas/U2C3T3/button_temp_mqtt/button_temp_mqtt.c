@@ -1,3 +1,13 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: Botão e Temperatura MQTT
+/ Descrição: Este código lê a temperatura do sensor e o estado de um botão, enviando os dados para um broker MQTT.
+/ Bibliotecas: pico-sdk, lwIP, CYW43
+/ Autor: José Adriano
+/ Obs_1: A parte do DNS foi adaptada de códigos de exemplos encontrado na internet.
+/ Obs_2: Necessário efetuar ajustes nos arquivos CMakeLists.txt e lwipopts.h para compilar corretamente.
+/ Data de Criação: 22/06/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 #include <stdio.h>
 #include <string.h>
 #include "pico/stdlib.h"
@@ -27,12 +37,9 @@ static bool mqtt_connected = false;
 
 // Prototipação de Funções
 static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
-static void publish_status(bool button_pressed, float temp_c);
-static float read_temperature();
-static void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg);
-
-
-
+void publish_msg(bool button_pressed, float temp_c);
+float read_temperature();
+void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callback_arg);
 
 // Função Principal
 int main() {
@@ -40,7 +47,7 @@ int main() {
     sleep_ms(2000);
     printf("\n=== Iniciando MQTT Button + Temperature ===\n");
 
-    // Inicializa Wi-Fi
+    // Inicializa Wi-Fis
     if (cyw43_arch_init()) {
         printf("Erro na inicialização do Wi-Fi\n");
         return -1;
@@ -69,9 +76,9 @@ int main() {
     mqtt_client = mqtt_client_new();
 
     // Resolve DNS do broker MQTT
-    err_t err = dns_gethostbyname(MQTT_BROKER, &broker_ip, dns_found_cb, NULL);
+    err_t err = dns_gethostbyname(MQTT_BROKER, &broker_ip, dns_check_callback, NULL);
     if (err == ERR_OK) {
-        dns_found_cb(MQTT_BROKER, &broker_ip, NULL);
+        dns_check_callback(MQTT_BROKER, &broker_ip, NULL);
     } else if (err == ERR_INPROGRESS) {
         printf("[DNS] Resolvendo...\n");
     } else {
@@ -92,7 +99,7 @@ int main() {
         printf("[TEMP] Temperatura atual: %.2f °C\n", temp_c);
 
         // Publica ambos no mesmo tópico
-        publish_status(button_state, temp_c);
+        publish_msg(button_state, temp_c);
 
         // Espera 1 segundo
         sleep_ms(1000);
@@ -114,7 +121,7 @@ static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_conn
 }
 
 // Publicar botão + temperatura
-void publish_status(bool button_pressed, float temp_c) {
+void publish_msg(bool button_pressed, float temp_c) {
     if (!mqtt_connected) {
         printf("[MQTT] Não conectado, não publicando dados\n");
         return;
@@ -146,7 +153,7 @@ float read_temperature() {
 }
 
 // Callback de DNS
-void dns_found_cb(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
+void dns_check_callback(const char *name, const ip_addr_t *ipaddr, void *callback_arg) {
     if (ipaddr != NULL) {
         broker_ip = *ipaddr;
         printf("[DNS] Resolvido: %s -> %s\n", name, ipaddr_ntoa(ipaddr));
