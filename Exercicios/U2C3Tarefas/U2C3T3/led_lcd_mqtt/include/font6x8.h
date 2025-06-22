@@ -2,6 +2,8 @@
 #define FONT6X8_H
 
 static const uint8_t font6x8[] = {
+    // Cada caractere ocupa 5 bytes (largura), altura é 8 pixels (1 byte por linha vertical)
+
     // Espaço (32)
     0x00,0x00,0x00,0x00,0x00,
     // !
@@ -193,4 +195,5 @@ static const uint8_t font6x8[] = {
     // ~
     0x08,0x04,0x08,0x10,0x08
 };
+
 #endif

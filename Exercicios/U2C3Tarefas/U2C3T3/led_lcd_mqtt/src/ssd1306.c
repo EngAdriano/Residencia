@@ -65,7 +65,7 @@ void ssd1306_draw_pixel(uint8_t x, uint8_t y, bool color) {
 void ssd1306_draw_string(uint8_t x, uint8_t y, const char *text) {
     while (*text) {
         char c = *text++;
-        if (c < 32 || c > 127) c = '?';
+        if (c < 32 || c > 126) c = '?';
         for (uint8_t i = 0; i < 5; i++) {
             uint8_t line = font6x8[(c - 32) * 5 + i];
             for (uint8_t j = 0; j < 8; j++) {
