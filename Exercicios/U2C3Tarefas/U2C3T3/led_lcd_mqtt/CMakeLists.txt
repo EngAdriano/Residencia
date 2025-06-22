@@ -35,7 +35,11 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(led_lcd_mqtt led_lcd_mqtt.c )
+add_executable(led_lcd_mqtt 
+        src/led_lcd_mqtt.c 
+        src/ssd1306.c)
+
+
 
 pico_set_program_name(led_lcd_mqtt "led_lcd_mqtt")
 pico_set_program_version(led_lcd_mqtt "0.1")
@@ -51,11 +55,15 @@ target_link_libraries(led_lcd_mqtt
 # Add the standard include files to the build
 target_include_directories(led_lcd_mqtt PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/src
+        ${CMAKE_CURRENT_LIST_DIR}/include
 )
 
 # Add any user requested libraries
 target_link_libraries(led_lcd_mqtt 
         pico_cyw43_arch_lwip_threadsafe_background
+        pico_lwip_mqtt
+        hardware_i2c
         )
 
 pico_add_extra_outputs(led_lcd_mqtt)
