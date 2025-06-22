@@ -159,7 +159,7 @@ void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status
         }
 
         ssd1306_clear();
-        ssd1306_draw_string(0, 0, "MQTT CONECTADO");
+        ssd1306_draw_string(0, 0, "MQTT Conectado");
         ssd1306_show();
     } else {
         printf("[MQTT] Falha conexão: %d\n", status);
