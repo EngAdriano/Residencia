@@ -3,8 +3,7 @@
 / Descrição: Este código lê a temperatura do sensor e o estado de um botão, enviando os dados para um broker MQTT.
 / Bibliotecas: pico-sdk, lwIP, CYW43
 / Autor: José Adriano
-/ Obs_1: A parte do DNS foi adaptada de códigos de exemplos encontrado na internet.
-/ Obs_2: Necessário efetuar ajustes nos arquivos CMakeLists.txt e lwipopts.h para compilar corretamente.
+/ Obs: Necessário efetuar ajustes nos arquivos CMakeLists.txt e lwipopts.h para compilar e funcionar corretamente.
 / Data de Criação: 22/06/2025
 /----------------------------------------------------------------------------------------------------------------------------------------
 */
@@ -35,7 +34,7 @@ static mqtt_client_t *mqtt_client;
 static ip_addr_t broker_ip;
 static bool mqtt_connected = false;
 
-// Prototipação de Funções
+// Protótipo das Funções
 static void mqtt_connection_callback(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 void publish_msg(bool button_pressed, float temp_c);
 float read_temperature();

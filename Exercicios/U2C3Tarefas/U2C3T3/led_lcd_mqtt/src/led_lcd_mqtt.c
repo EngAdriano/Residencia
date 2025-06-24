@@ -195,7 +195,7 @@ void publish_button_state(bool pressed) {
     if (!mqtt_connected) return;
 
     char payload[64];
-    snprintf(payload, sizeof(payload), "{\"button\":%d}", pressed ? 1 : 0);
+    snprintf(payload, sizeof(payload), "{\"botao\":%d}", pressed ? 1 : 0);
 
     err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC_PUB, payload, strlen(payload), 0, 0, NULL, NULL);
     if (err == ERR_OK) {
