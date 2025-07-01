@@ -25,7 +25,8 @@
 #define MQTT_BROKER "broker.hivemq.com"
 #define MQTT_BROKER_PORT 1883
 
-#define MQTT_TOPIC "pico/button"
+//#define MQTT_TOPIC "pico/button"
+#define MQTT_TOPIC "embarca/button"
 
 // Configurações do Botão
 #define BUTTON_GPIO 5

@@ -18,8 +18,8 @@
 #define MQTT_BROKER "broker.hivemq.com"
 #define MQTT_PORT_BROKER 1883
 
-#define MQTT_TOPIC_PUB "pico/status"
-#define MQTT_TOPIC_SUB "pico/comando"
+#define MQTT_TOPIC_PUB "embarca/status"
+#define MQTT_TOPIC_SUB "embarca/comando"
 
 #define BUTTON_GPIO 5
 #define LED_GPIO 12
