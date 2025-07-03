@@ -12,8 +12,8 @@
 #include "ssd1306.h"
 
 // ======================= Configurações =========================
-#define WIFI_SSID "Lu e Deza"
-#define WIFI_PASSWORD "liukin1208"
+#define WIFI_SSID "xxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxx"
 
 #define MQTT_BROKER "broker.emqx.io"       // Broker da MQTTX
 #define MQTT_PORT_BROKER 1883              // Porta sem TLS
