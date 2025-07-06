@@ -9,8 +9,8 @@
 #include "lwip/dns.h"
 
 // Wi-Fi
-#define WIFI_SSID "Lu e Deza"
-#define WIFI_PASSWORD "liukin1208"
+#define WIFI_SSID "xxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxx"
 
 // MQTT Broker público compatível com MQTTX
 #define MQTT_BROKER "broker.emqx.io"
