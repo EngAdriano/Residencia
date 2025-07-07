@@ -18,8 +18,8 @@
 #include "lwip/dns.h"
 
 // Configurações Wi-Fi
-#define WIFI_SSID "xxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxx"
+#define WIFI_SSID "Lu e Deza"
+#define WIFI_PASSWORD "liukin1208"
 
 // Configurações MQTT
 #define MQTT_BROKER "broker.hivemq.com"
