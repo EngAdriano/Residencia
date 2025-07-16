@@ -51,11 +51,16 @@ target_link_libraries(estudo_VL53L0X
 # Add the standard include files to the build
 target_include_directories(estudo_VL53L0X PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/core/inc
+        ${CMAKE_CURRENT_LIST_DIR}/core/src
+        ${CMAKE_CURRENT_LIST_DIR}/platform/inc
+        ${CMAKE_CURRENT_LIST_DIR}/platform/crc
 )
 
 # Add any user requested libraries
 target_link_libraries(estudo_VL53L0X 
         pico_cyw43_arch_lwip_threadsafe_background
+        hardware_i2c
         )
 
 pico_add_extra_outputs(estudo_VL53L0X)
