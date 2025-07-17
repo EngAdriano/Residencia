@@ -48,22 +48,43 @@ pico_enable_stdio_usb(estudo_VL53L0X 1)
 target_link_libraries(estudo_VL53L0X
         pico_stdlib)
 
+add_library(vl53l0x_api_rp2040 INTERFACE)
+target_sources(vl53l0x_api_rp2040 INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/core/src/vl53l0x_api_calibration.c
+    ${CMAKE_CURRENT_LIST_DIR}/core/src/vl53l0x_api_core.c
+    ${CMAKE_CURRENT_LIST_DIR}/core/src/vl53l0x_api_ranging.c
+    ${CMAKE_CURRENT_LIST_DIR}/core/src/vl53l0x_api_strings.c
+    ${CMAKE_CURRENT_LIST_DIR}/core/src/vl53l0x_api.c 
+    ${CMAKE_CURRENT_LIST_DIR}/platform/src/vl53l0x_rp2040.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/src/vl53l0x_platform.c 
+)
+ 
+target_include_directories(vl53l0x_api_rp2040 INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/core/inc
+    ${CMAKE_CURRENT_LIST_DIR}/core/src
+    ${CMAKE_CURRENT_LIST_DIR}/platform/inc
+    ${CMAKE_CURRENT_LIST_DIR}/platform/crc
+)
+ 
+target_link_libraries(vl53l0x_api_rp2040 INTERFACE
+        pico_stdlib
+        hardware_i2c
+
+
 # Add the standard include files to the build
 target_include_directories(estudo_VL53L0X PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/..
-        )
+        ${CMAKE_CURRENT_LIST_DIR}/core/inc
+        ${CMAKE_CURRENT_LIST_DIR}/core/src
+        ${CMAKE_CURRENT_LIST_DIR}/platform/inc
+        ${CMAKE_CURRENT_LIST_DIR}/platform/crc
+)
 
- target_link_libraries(estudo_VL53L0X
-        hardware_i2c
-        pico_multicore
-        )
-
-add_subdirectory(vl53l0x_api_rp2040)
 # Add any user requested libraries
 target_link_libraries(estudo_VL53L0X 
-        vl53l0x_api_rp2040
-        #pico_cyw43_arch_lwip_threadsafe_background
+        pico_cyw43_arch_lwip_threadsafe_background
+        hardware_i2c
         )
 
 pico_add_extra_outputs(estudo_VL53L0X)
