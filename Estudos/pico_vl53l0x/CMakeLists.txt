@@ -33,6 +33,9 @@ project(pico_vl53l0x C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# Add the vl53l0x_api_rp2040 subdirectory
+add_subdirectory(vl53l0x_api_rp2040)
+
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(pico_vl53l0x pico_vl53l0x.c )
@@ -46,7 +49,13 @@ pico_enable_stdio_usb(pico_vl53l0x 1)
 
 # Add the standard library to the build
 target_link_libraries(pico_vl53l0x
-        pico_stdlib)
+    pico_stdlib
+    hardware_i2c
+    pico_multicore
+    pico_cyw43_arch_lwip_threadsafe_background
+    vl53l0x_api_rp2040
+)
+
 
 # Add the standard include files to the build
 target_include_directories(pico_vl53l0x PRIVATE
@@ -54,13 +63,6 @@ target_include_directories(pico_vl53l0x PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
-# Add any user requested libraries
-target_link_libraries(pico_vl53l0x 
-        hardware_i2c
-        pico_multicore
-        pico_cyw43_arch_lwip_threadsafe_background
-        )
-add_subdirectory(vl53l0x_api_rp2040)
 target_link_libraries(pico_vl53l0x
   vl53l0x_api_rp2040
       )
