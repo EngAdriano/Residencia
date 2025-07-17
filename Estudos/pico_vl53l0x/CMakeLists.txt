@@ -51,12 +51,18 @@ target_link_libraries(pico_vl53l0x
 # Add the standard include files to the build
 target_include_directories(pico_vl53l0x PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
 # Add any user requested libraries
 target_link_libraries(pico_vl53l0x 
+        hardware_i2c
+        pico_multicore
         pico_cyw43_arch_lwip_threadsafe_background
         )
-
+add_subdirectory(vl53l0x_api_rp2040)
+target_link_libraries(pico_vl53l0x
+  vl53l0x_api_rp2040
+      )
 pico_add_extra_outputs(pico_vl53l0x)
 
