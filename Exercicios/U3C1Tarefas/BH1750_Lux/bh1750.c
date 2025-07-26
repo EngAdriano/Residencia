@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 
 void bh1750_init(i2c_inst_t *i2c) {
-    uint8_t cmd = 0x10;  // Continuously H-Resolution Mode
+    uint8_t cmd = 0x10;  // Modo Continuo de Alta Resolução
     i2c_write_blocking(i2c, BH1750_ADDR, &cmd, 1, false);
     sleep_ms(180);  // Tempo de conversão típico
 }
