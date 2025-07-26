@@ -66,6 +66,10 @@ int main() {
     printf("Inicializando AHT10...\n");
     if (!AHT10_Init(&aht10)) {
         printf("Falha na inicialização do sensor!\n");
+        ssd1306_clear();
+        ssd1306_draw_string(32, 0, "Embarcatech");
+        ssd1306_draw_string(23, 30, "Falha no AHT10");
+        ssd1306_show();
         while (1) sleep_ms(1000);
     }
 
