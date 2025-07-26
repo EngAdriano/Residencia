@@ -76,6 +76,19 @@ int main() {
         } else {
             printf("Falha na leitura dos dados!\n");
         }
+
+        ssd1306_clear();
+        ssd1306_draw_string(32, 0, "Embarcatech");
+        ssd1306_draw_string(20, 10, "Temperatura:");
+        char temp_str[16];
+        snprintf(temp_str, sizeof(temp_str), "%.2f C", temp);
+        ssd1306_draw_string(20, 20, temp_str);
+        ssd1306_draw_string(20, 30, "Umidade:");
+        char hum_str[16];
+        snprintf(hum_str, sizeof(hum_str), "%.2f %%", hum);
+        ssd1306_draw_string(20, 40, hum_str);
+        ssd1306_show();
+
         sleep_ms(2000);
     }
 }
