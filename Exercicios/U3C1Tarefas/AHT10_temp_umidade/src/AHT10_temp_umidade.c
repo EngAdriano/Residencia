@@ -1,9 +1,16 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: Sensor AHT10 com OLED SSD1306
+/ Descrição: Este código lê a temperatura e umidade do sensor AHT10 e exibe os dados em um display OLED SSD1306.
+/ Bibliotecas: aht10, ssd1306
+/ Autor: José Adriano
+/ Data de Criação: 26/07/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "aht10/aht10.h"
 #include "inc/ssd1306/ssd1306.h"
-
 
 // I2C usado: I2C0 com SDA=GPIO4, SCL=GPIO5
 #define I2C_PORT0 i2c0
@@ -14,22 +21,10 @@
 #define I2C_SDA1 14
 #define I2C_SCL1 15
 
-// Wrapper para escrita I2C
-int i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len) {
-    int result = i2c_write_blocking(I2C_PORT0, addr, data, len, false);
-    return result < 0 ? -1 : 0;
-}
-
-// Wrapper para leitura I2C
-int i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len) {
-    int result = i2c_read_blocking(I2C_PORT0, addr, data, len, false);
-    return result < 0 ? -1 : 0;
-}
-
-// Wrapper para delay
-void delay_ms_wrapper(uint32_t ms) {
-    sleep_ms(ms);
-}
+// Prototipos das funções I2C
+int i2c_write(uint8_t addr, const uint8_t *data, uint16_t len);
+int i2c_read(uint8_t addr, uint8_t *data, uint16_t len);
+void delay_ms(uint32_t ms);
 
 int main() {
     stdio_init_all();
@@ -57,9 +52,9 @@ int main() {
     // Define estrutura do sensor
     AHT10_Handle aht10 = {
         .iface = {
-            .i2c_write = i2c_write_wrapper,
-            .i2c_read = i2c_read_wrapper,
-            .delay_ms = delay_ms_wrapper
+            .i2c_write = i2c_write,
+            .i2c_read = i2c_read,
+            .delay_ms = delay_ms
         }
     };
 
@@ -84,16 +79,34 @@ int main() {
         ssd1306_clear();
         ssd1306_draw_string(32, 0, "Embarcatech");
         ssd1306_draw_string(30, 10, "AHT10 Sensor");
-        ssd1306_draw_string(0, 20, "Temperatura");
+        ssd1306_draw_string(0, 30, "Temperatura");
         char temp_str[16];
         snprintf(temp_str, sizeof(temp_str), "%.2f C", temp);
-        ssd1306_draw_string(85, 20, temp_str);
-        ssd1306_draw_string(0, 40, "Umidade");
+        ssd1306_draw_string(85, 30, temp_str);
+        ssd1306_draw_string(0, 50, "Umidade");
         char hum_str[16];
         snprintf(hum_str, sizeof(hum_str), "%.2f %%", hum);
-        ssd1306_draw_string(85, 40, hum_str);
+        ssd1306_draw_string(85, 50, hum_str);
         ssd1306_show();
 
         sleep_ms(2000);
     }
 }
+
+// Função para escrita I2C
+int i2c_write(uint8_t addr, const uint8_t *data, uint16_t len) {
+    int result = i2c_write_blocking(I2C_PORT0, addr, data, len, false);
+    return result < 0 ? -1 : 0;
+}
+
+// Função para leitura I2C
+int i2c_read(uint8_t addr, uint8_t *data, uint16_t len) {
+    int result = i2c_read_blocking(I2C_PORT0, addr, data, len, false);
+    return result < 0 ? -1 : 0;
+}
+
+// Função para delay
+void delay_ms(uint32_t ms) {
+    sleep_ms(ms);
+}
+
