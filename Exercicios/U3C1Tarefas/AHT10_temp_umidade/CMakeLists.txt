@@ -36,8 +36,9 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(AHT10_temp_umidade 
-        AHT10_temp_umidade.c
-        aht10/aht10.c
+        src/AHT10_temp_umidade.c
+        src/aht10.c
+        src/ssd1306.c
 )
 
 pico_set_program_name(AHT10_temp_umidade "AHT10_temp_umidade")
@@ -56,6 +57,8 @@ target_link_libraries(AHT10_temp_umidade
 # Add the standard include files to the build
 target_include_directories(AHT10_temp_umidade PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/src
+        ${CMAKE_CURRENT_LIST_DIR}/inc
 )
 
 # Add any user requested libraries

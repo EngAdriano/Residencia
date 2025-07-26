@@ -2,21 +2,27 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "aht10/aht10.h"
+#include "inc/ssd1306/ssd1306.h"
+
 
 // I2C usado: I2C0 com SDA=GPIO4, SCL=GPIO5
-#define I2C_PORT i2c0
-#define I2C_SDA 0
-#define I2C_SCL 1
+#define I2C_PORT0 i2c0
+#define I2C_SDA0 0
+#define I2C_SCL0 1
+
+#define I2C_PORT1 i2c1
+#define I2C_SDA1 14
+#define I2C_SCL1 15
 
 // Wrapper para escrita I2C
 int i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len) {
-    int result = i2c_write_blocking(I2C_PORT, addr, data, len, false);
+    int result = i2c_write_blocking(I2C_PORT0, addr, data, len, false);
     return result < 0 ? -1 : 0;
 }
 
 // Wrapper para leitura I2C
 int i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len) {
-    int result = i2c_read_blocking(I2C_PORT, addr, data, len, false);
+    int result = i2c_read_blocking(I2C_PORT0, addr, data, len, false);
     return result < 0 ? -1 : 0;
 }
 
@@ -28,12 +34,25 @@ void delay_ms_wrapper(uint32_t ms) {
 int main() {
     stdio_init_all();
 
-    // Inicializa I2C
-    i2c_init(I2C_PORT, 100 * 1000); // 100 kHz
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
+    // Inicializa I2C sensor
+    i2c_init(I2C_PORT0, 100 * 1000); // 100 kHz
+    gpio_set_function(I2C_SDA0, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL0, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA0);
+    gpio_pull_up(I2C_SCL0);
+
+    // Inicializa I2C OLED
+    i2c_init(I2C_PORT1, 400000);
+    gpio_set_function(I2C_SDA1, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL1, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA1);
+    gpio_pull_up(I2C_SCL1);
+
+    ssd1306_init(I2C_PORT1);
+    ssd1306_clear();
+    ssd1306_draw_string(32, 0, "Embarcatech");
+    ssd1306_draw_string(20, 10, "Inicializando...");
+    ssd1306_show();
 
     // Define estrutura do sensor
     AHT10_Handle aht10 = {
