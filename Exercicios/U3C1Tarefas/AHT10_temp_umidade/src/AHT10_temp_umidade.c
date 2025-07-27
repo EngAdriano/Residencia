@@ -89,7 +89,7 @@ int main() {
         ssd1306_draw_string(85, 50, hum_str);
         ssd1306_show();
 
-        sleep_ms(2000);
+        sleep_ms(1000);
     }
 }
 
