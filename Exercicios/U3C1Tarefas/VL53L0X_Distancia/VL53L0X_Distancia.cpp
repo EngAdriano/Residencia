@@ -15,8 +15,7 @@ int main()
     stdio_init_all();
 
     // Inicia a interface I2C
-  uint baud = i2c_init (I2C_ID, BAUD_RATE);
-  printf ("I2C @ %u Hz\n", baud);
+  i2c_init (I2C_ID, BAUD_RATE);
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
   gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
   gpio_pull_up(I2C_SCL_PIN);
@@ -25,11 +24,11 @@ int main()
   VL53L0X sensor;
   sensor.init();
   sensor.setTimeout(500);
-  sensor.startContinuous();
+  sensor.startContinuous(100);
 
     while (true) {
         
-        printf("millimeters: %d\n", sensor.readRangeContinuousMillimeters());
+        printf("millimeters: %d\n", (sensor.readRangeContinuousMillimeters())-30);
         sleep_ms(1000);
     }
 }

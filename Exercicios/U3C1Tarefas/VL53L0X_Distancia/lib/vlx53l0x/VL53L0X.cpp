@@ -1,17 +1,17 @@
-// Most of the functionality of this library is based on the VL53L0X API
-// provided by ST (STSW-IMG005), and some of the explanatory comments are quoted
-// or paraphrased from the API source code, API user manual (UM2039), and the
-// VL53L0X datasheet.
+// A maior parte da funcionalidade desta biblioteca é baseada na API VL53L0X
+// fornecida pela ST (STSW-IMG005), e alguns dos comentários explicativos são citados
+// ou parafraseados do código-fonte da API, manual do usuário da API (UM2039) e do
+// datasheet do VL53L0X.
 
 #include "VL53L0X.h"
 
-// Record the current time to check an upcoming timeout against
+// Registre o tempo atual para verificar um próximo timeout
 void VL53L0X::startTimeout()
 {
     timeout_start_ms = to_ms_since_boot(get_absolute_time());
 }
 
-// Check if timeout is enabled (set to nonzero value) and has expired
+// Verifique se o timeout está habilitado (definido como um valor diferente de zero) e se expirou
 bool VL53L0X::checkTimeoutExpired()
 {
     return io_timeout > 0 && (to_ms_since_boot(get_absolute_time()) - timeout_start_ms > io_timeout);
@@ -29,17 +29,17 @@ uint16_t VL53L0X::getTimeout()
 
 // Defines /////////////////////////////////////////////////////////////////////
 
-// Decode VCSEL (vertical cavity surface emitting laser) pulse period in PCLKs
-// from register value
-// based on VL53L0X_decode_vcsel_period()
+// Decodificar o período de pulso VCSEL (laser de emissão de superfície de cavidade vertical) em PCLKs
+// a partir do valor do registrador
+// com base em VL53L0X_decode_vcsel_period()
 #define decodeVcselPeriod(reg_val) (((reg_val) + 1) << 1)
 
-// Encode VCSEL pulse period register value from period in PCLKs
-// based on VL53L0X_encode_vcsel_period()
+// Codificar o valor do registrador do período de pulso VCSEL a partir do período em PCLKs
+// com base em VL53L0X_encode_vcsel_period()
 #define encodeVcselPeriod(period_pclks) (((period_pclks) >> 1) - 1)
 
-// Calculate macro period in *nanoseconds* from VCSEL period in PCLKs
-// based on VL53L0X_calc_macro_period_ps()
+// Calcular o período macro em *nanosegundos* a partir do período VCSEL em PCLKs
+// com base em VL53L0X_calc_macro_period_ps()
 // PLL_period_ps = 1655; macro_period_vclks = 2304
 #define calcMacroPeriod(vcsel_period_pclks) ((((uint32_t)2304 * (vcsel_period_pclks) * 1655) + 500) / 1000)
 
