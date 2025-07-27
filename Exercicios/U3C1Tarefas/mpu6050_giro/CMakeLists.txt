@@ -35,7 +35,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(mpu6050_giro mpu6050_giro.cpp )
+add_executable(mpu6050_giro 
+        mpu6050_giro.cpp
+        lib/mpu6050/MPU6050.cpp 
+)
 
 pico_set_program_name(mpu6050_giro "mpu6050_giro")
 pico_set_program_version(mpu6050_giro "0.1")
@@ -51,6 +54,7 @@ target_link_libraries(mpu6050_giro
 # Add the standard include files to the build
 target_include_directories(mpu6050_giro PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib/mpu6050
 )
 
 # Add any user requested libraries
