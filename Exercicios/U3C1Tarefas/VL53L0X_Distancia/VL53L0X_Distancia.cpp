@@ -14,7 +14,7 @@ int main()
 {
     stdio_init_all();
 
-    // Inicia a interface I2C
+  // Inicia a interface I2C
   i2c_init (I2C_ID, BAUD_RATE);
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
   gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
