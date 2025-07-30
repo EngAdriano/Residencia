@@ -55,9 +55,14 @@ int main()
     printf ("Giroscopio X:%.1f Y:%.1f Z:%.1f\n", data.x, data.y, data.z);
     printf ("Temperatura: %.1f\n", sensor.getTemp());
     printf("\n");
+
+    ssd1306_clear();
+    ssd1306_draw_string(32, 0, "Embarcatech");
+    char temp_str_x[16];
+    snprintf(temp_str_x, sizeof(temp_str_x), "%.1f", data.x);
+    ssd1306_draw_string(35, 20, "Aceleracao ");
+    ssd1306_draw_string(0, 30, temp_str_x);
+    ssd1306_draw_string(35, 40, "Giroscopio ");
+    ssd1306_show();
   }
 }
-
-
-
-
