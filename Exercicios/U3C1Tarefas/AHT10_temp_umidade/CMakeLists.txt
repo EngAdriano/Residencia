@@ -37,8 +37,8 @@ pico_sdk_init()
 
 add_executable(AHT10_temp_umidade 
         src/AHT10_temp_umidade.c
-        src/aht10.c
-        src/ssd1306.c
+        inc/aht10/aht10.c
+        inc/ssd1306/ssd1306.c
 )
 
 pico_set_program_name(AHT10_temp_umidade "AHT10_temp_umidade")
@@ -51,7 +51,6 @@ pico_enable_stdio_usb(AHT10_temp_umidade 1)
 # Add the standard library to the build
 target_link_libraries(AHT10_temp_umidade
         pico_stdlib
-        hardware_i2c
         )
 
 # Add the standard include files to the build
@@ -59,11 +58,14 @@ target_include_directories(AHT10_temp_umidade PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/src
         ${CMAKE_CURRENT_LIST_DIR}/inc
+        ${CMAKE_CURRENT_LIST_DIR}/inc/aht10
+        ${CMAKE_CURRENT_LIST_DIR}/inc/ssd1306
+
 )
 
 # Add any user requested libraries
 target_link_libraries(AHT10_temp_umidade 
-        
+        hardware_i2c
         )
 
 pico_add_extra_outputs(AHT10_temp_umidade)

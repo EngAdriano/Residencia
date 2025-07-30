@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "aht10/aht10.h"
-#include "inc/ssd1306/ssd1306.h"
+#include "aht10.h"
+#include "ssd1306.h"
 
 // I2C usado: I2C0 com SDA=GPIO4, SCL=GPIO5
 #define I2C_PORT0 i2c0
@@ -75,6 +75,39 @@ int main() {
         } else {
             printf("Falha na leitura dos dados!\n");
         }
+            while(hum > 70){
+                ssd1306_clear();
+                ssd1306_draw_string(32, 0, "Embarcatech");
+                ssd1306_draw_string(30, 10, "AHT10 Sensor");
+                ssd1306_draw_string(0, 20, "Umidade");
+                char hum_str[16];
+                snprintf(hum_str, sizeof(hum_str), "%.2f %%", hum);
+                ssd1306_draw_string(85, 20, hum_str);
+                ssd1306_draw_string(22,40, "Acima de 70 %");
+                ssd1306_draw_string(40,50, "ATENCAO");
+                ssd1306_show();
+                sleep_ms(500);
+                ssd1306_draw_string(40,50, "       ");
+                ssd1306_show();
+                sleep_ms(500);
+            }
+
+        while(temp < 20){
+                ssd1306_clear();
+                ssd1306_draw_string(32, 0, "Embarcatech");
+                ssd1306_draw_string(30, 10, "AHT10 Sensor");
+                ssd1306_draw_string(0, 20, "Temperatura");
+                char hum_str[16];
+                snprintf(hum_str, sizeof(hum_str), "%.2f C", temp);
+                ssd1306_draw_string(85, 20, hum_str);
+                ssd1306_draw_string(20,40, "Abaixo de 20 C");
+                ssd1306_draw_string(40,50, "ATENCAO");
+                ssd1306_show();
+                sleep_ms(500);
+                ssd1306_draw_string(40,50, "       ");
+                ssd1306_show();
+                sleep_ms(500);
+            }
 
         ssd1306_clear();
         ssd1306_draw_string(32, 0, "Embarcatech");
