@@ -24,8 +24,17 @@ pico_sdk_init()
 
 add_executable(mpu6050
     mpu6050_sdk.cpp
+    lib/mpu6050/mpu6050.cpp
+    lib/ssd1306/ssd1306.c
 )
 
+# Add the standard include files to the build
+target_include_directories(mpu6050 PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/mpu6050
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
+)
 
 target_link_libraries(mpu6050 PRIVATE
     pico_stdlib
