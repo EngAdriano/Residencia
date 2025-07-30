@@ -37,8 +37,8 @@ pico_sdk_init()
 
 add_executable(BH1750_Lux 
     BH1750_Lux.c
-    bh1750.c
-    bh1750.h
+    lib/bh1750/bh1750.c
+    lib/ssd1306/ssd1306.c
 )
 
 pico_set_program_name(BH1750_Lux "BH1750_Lux")
@@ -57,6 +57,9 @@ target_link_libraries(BH1750_Lux
 # Add the standard include files to the build
 target_include_directories(BH1750_Lux PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/bh1750
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
 )
 
 # Add any user requested libraries
