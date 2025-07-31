@@ -54,7 +54,8 @@ target_link_libraries(VL53L0X_Distancia
 # Add the standard include files to the build
 target_include_directories(VL53L0X_Distancia PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/lib/VL53L0X
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/vlx53l0x
 )
 
 # Add any user requested libraries

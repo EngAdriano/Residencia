@@ -3,7 +3,7 @@
 // ou parafraseados do código-fonte da API, manual do usuário da API (UM2039) e do
 // datasheet do VL53L0X.
 
-#include "VL53L0X.h"
+#include "VL53L0X.hpp"
 
 // Registre o tempo atual para verificar um próximo timeout
 void VL53L0X::startTimeout()

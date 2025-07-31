@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "lib/vlx53l0x/VL53L0X.h"
+#include "VL53L0X.hpp"
 
 // Conexões do sensor
 #define I2C_ID        i2c0
