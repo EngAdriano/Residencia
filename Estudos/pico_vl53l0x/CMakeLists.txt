@@ -33,12 +33,18 @@ project(pico_vl53l0x C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add the vl53l0x_api_rp2040 subdirectory
-add_subdirectory(vl53l0x_api_rp2040)
-
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(pico_vl53l0x pico_vl53l0x.c )
+add_executable(pico_vl53l0x 
+        pico_vl53l0x.c 
+        vl53l0x_api_rp2040/core/src/vl53l0x_api_calibration.c
+        vl53l0x_api_rp2040/core/src/vl53l0x_api_core.c
+        vl53l0x_api_rp2040/core/src/vl53l0x_api_ranging.c
+        vl53l0x_api_rp2040/core/src/vl53l0x_api_strings.c
+        vl53l0x_api_rp2040/core/src/vl53l0x_api.c 
+        vl53l0x_api_rp2040/platform/src/vl53l0x_rp2040.c
+        vl53l0x_api_rp2040/platform/src/vl53l0x_platform.c 
+)
 
 pico_set_program_name(pico_vl53l0x "pico_vl53l0x")
 pico_set_program_version(pico_vl53l0x "0.1")
@@ -50,21 +56,24 @@ pico_enable_stdio_usb(pico_vl53l0x 1)
 # Add the standard library to the build
 target_link_libraries(pico_vl53l0x
     pico_stdlib
-    hardware_i2c
-    pico_multicore
-    pico_cyw43_arch_lwip_threadsafe_background
-    vl53l0x_api_rp2040
 )
 
 
 # Add the standard include files to the build
 target_include_directories(pico_vl53l0x PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/..
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/core
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/core/inc
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/core/src
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/platform
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/platform/inc
+        ${CMAKE_CURRENT_LIST_DIR}/vl53l0x_api_rp2040/platform/src
 )
 
 target_link_libraries(pico_vl53l0x
-  vl53l0x_api_rp2040
-      )
+    hardware_i2c
+    pico_multicore
+)
 pico_add_extra_outputs(pico_vl53l0x)
 
