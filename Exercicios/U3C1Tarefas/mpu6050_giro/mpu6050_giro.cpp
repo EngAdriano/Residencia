@@ -58,11 +58,24 @@ int main()
 
     ssd1306_clear();
     ssd1306_draw_string(32, 0, "Embarcatech");
-    char temp_str_x[16];
-    snprintf(temp_str_x, sizeof(temp_str_x), "%.1f", data.x);
-    ssd1306_draw_string(35, 20, "Aceleracao ");
-    ssd1306_draw_string(0, 30, temp_str_x);
-    ssd1306_draw_string(35, 40, "Giroscopio ");
+    ssd1306_draw_string(20, 10, "Sensor - BH1750");
+    char temp_str[16];
+    ssd1306_draw_string(15, 20, "Acelerometro(g) ");
+    sensor.getAccel(&data);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.x);
+    ssd1306_draw_string(1, 30, temp_str);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.y);
+    ssd1306_draw_string(50, 30, temp_str);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.z);
+    ssd1306_draw_string(95, 30, temp_str);
+    ssd1306_draw_string(8, 40, "Giroscopio(grau/s) ");
+    sensor.getGyro(&data);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.x);
+    ssd1306_draw_string(1, 50, temp_str);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.y);
+    ssd1306_draw_string(50, 50, temp_str);
+    snprintf(temp_str, sizeof(temp_str), "%.1f", data.z);
+    ssd1306_draw_string(95, 50, temp_str);
     ssd1306_show();
   }
 }
