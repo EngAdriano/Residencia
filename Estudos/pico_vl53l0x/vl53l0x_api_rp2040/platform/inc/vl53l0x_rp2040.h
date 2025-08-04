@@ -10,13 +10,23 @@ extern "C" {
 
 #define    BYTES_PER_WORD        2
 #define    BYTES_PER_DWORD       4
-
+/*
 enum {
     VL53L0X_DEFAULT_MODE    =   30000,
     VL53L0X_HIGHT_ACCURACY  =   200000,
     VL53L0X_LONG_RANGE      =   33000,
     VL53L0X_HIGH_SPEED      =   20000
 } RANGE_PROFILE;
+*/
+// Usei para tentar resolver o problema de compilação
+
+typedef enum {
+    VL53L0X_DEFAULT_MODE    =   30000,
+    VL53L0X_HIGH_ACCURACY   =   200000,
+    VL53L0X_LONG_RANGE      =   33000,
+    VL53L0X_HIGH_SPEED      =   20000
+} RangeProfile_t;
+
 
 int32_t VL53L0X_write_multi(uint8_t address, uint8_t index, uint8_t  *pdata, int32_t count);
 int32_t VL53L0X_read_multi(uint8_t address,  uint8_t index, uint8_t  *pdata, int32_t count);
