@@ -11,9 +11,9 @@ VL53L0X_RangingMeasurementData_t gRangingData;
 VL53L0X_Dev_t gVL53L0XDevice;
 
 #define VL53L0X_GPIO_IRQ    16
-#define RED_LED_PIN         15
-#define GREEN_LED_PIN       14
-#define BLUE_LED_PIN        13
+#define RED_LED_PIN         13
+#define GREEN_LED_PIN       11
+#define BLUE_LED_PIN        12
 
 volatile bool vl53l0x_irq_data_ready=false;
 
