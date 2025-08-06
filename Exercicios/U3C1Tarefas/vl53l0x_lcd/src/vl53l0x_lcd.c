@@ -25,11 +25,10 @@ int main()
     ssd1306_draw_string(20, 10, "Inicializando...");
     ssd1306_show();
 
-    sleep_ms(100); // Aguarda estabilização
+    config_i2c();       // Configuração de I2C para o VL53L0X
+    sleep_ms(100);      // Aguarda estabilização do I2C
 
-    config_i2c();       // Configuração de I2C
-    sleep_ms(2000);
-
+    // Inicializa o VL53L0X
     if (!vl53l0x_init(I2C_PORT)) {
         //printf("Falha ao inicializar o VL53L0X.\n");
         ssd1306_clear();
@@ -50,8 +49,6 @@ int main()
         ssd1306_draw_string(32, 0, "Embarcatech");
         ssd1306_draw_string(20, 10, "Sensor - VL53L0X");
         
-
-        
         if (distancia < 0) {
             printf("Erro na leitura da distância.\n");
         } else {
@@ -62,6 +59,6 @@ int main()
             ssd1306_draw_string(20, 50, temp_str);
         }
         ssd1306_show();
-        sleep_ms(1000);
+        sleep_ms(100);
     }
 }
