@@ -50,7 +50,13 @@ int main()
         gyro_dps[1] = gyro[1] / 131.0f;
         gyro_dps[2] = gyro[2] / 131.0f;
 
-        inclination = atan2(gyro_dps[0], sqrt(gyro_dps[1] * gyro_dps[1] + gyro_dps[2] * gyro_dps[2])) * (180.0 / M_PI);
+        // Calcula a inclinação em relação ao eixo X
+        // Inclinação é calculada como o arco tangente da razão entre o eixo Y e a raiz quadrada da 
+        //soma dos quadrados dos eixos Y e Z
+        // Isso fornece a inclinação em relação ao eixo X, considerando os eixos Y e
+        // Z como base para o cálculo da tangente.
+        // A função atan2 é usada para calcular o ângulo em radianos, que é então convertido para graus.
+        inclination = atan2(accel_g[0], sqrt(accel_g[1] * accel_g[1] + accel_g[2] * accel_g[2])) * (180.0 / M_PI);
 
         // Exibe os dados no OLED
         ssd1306_clear();    
