@@ -35,6 +35,7 @@ int main()
     // Inicializa I2C MPU6050
     mpu6050_setup_i2c();
     mpu6050_reset();
+    sleep_ms(100);
     mpu6050_set_accel_range(0); // Set to ±2g
 
     while (true) {
@@ -65,20 +66,15 @@ int main()
         char buffer[20];
         snprintf(buffer, sizeof(buffer), "%.2f", accel_g[0]);
         ssd1306_draw_string(0, 10, buffer);
-        //ssd1306_draw_string(0, 20, "Y:");
         snprintf(buffer, sizeof(buffer), "%.2f", accel_g[1]);
         ssd1306_draw_string(45, 10, buffer);
-        //ssd1306_draw_string(0, 30, "Z:");
         snprintf(buffer, sizeof(buffer), "%.2f", accel_g[2]);
         ssd1306_draw_string(90, 10, buffer);
         ssd1306_draw_string(0, 25, "Giroscopio (dps):");
-        //ssd1306_draw_string(0, 50, "X:");
         snprintf(buffer, sizeof(buffer), "%.2f", gyro_dps[0]);
         ssd1306_draw_string(0, 35, buffer);
-        //ssd1306_draw_string(0, 60, "Y:");
         snprintf(buffer, sizeof(buffer), "%.2f", gyro_dps[1]);
         ssd1306_draw_string(45, 35, buffer);
-        //ssd1306_draw_string(0, 70, "Z:");
         snprintf(buffer, sizeof(buffer), "%.2f", gyro_dps[2]);
         ssd1306_draw_string(90, 35, buffer);
         //ssd1306_draw_string(0, 50, "Temp:");

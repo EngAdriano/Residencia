@@ -13,6 +13,9 @@ void mpu6050_setup_i2c() {
     gpio_pull_up(I2C_SCL);
 }
 
+// Reseta o MPU6050
+// O reset é feito escrevendo 0x80 no registro 0x6B (PWR_MGMT_1)
+// Após o reset, é necessário aguardar 100 ms antes de reconfigurar o dispositivo
 void mpu6050_reset() {
     uint8_t buf[] = {0x6B, 0x80};
     i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false);
