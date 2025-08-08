@@ -24,19 +24,31 @@ int main()
     gpio_pull_up(I2C_SDA1);
     gpio_pull_up(I2C_SCL1);
 
+    // Inicializa I2C MPU6050 (i2c0)
+    i2c_init(I2C_PORT, 400000);
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
+
     // Inicializa o display OLED
     ssd1306_init(I2C_PORT1);
     ssd1306_clear();
     ssd1306_draw_string(32, 0, "Embarcatech");
     ssd1306_draw_string(20, 10, "Inicializando...");
     ssd1306_show();
-    sleep_ms(1000);
+    sleep_ms(100);
 
     // Inicializa I2C MPU6050
     mpu6050_setup_i2c();
-    mpu6050_reset();
-    sleep_ms(100);
     mpu6050_set_accel_range(0); // Set to ±2g
+  
+    // Testa o MPU6050
+    if (!mpu6050_test()) {
+        ssd1306_draw_string(25, 30, "Falha MPU6050!");
+        ssd1306_show();
+        while (true);
+    }
 
     while (true) {
         // Lê os dados do MPU6050

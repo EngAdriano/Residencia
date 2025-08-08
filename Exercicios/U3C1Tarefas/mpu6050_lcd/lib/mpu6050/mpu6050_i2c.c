@@ -1,9 +1,6 @@
-#include "./mpu6050_i2c.h"
+#include "mpu6050_i2c.h"
 
-#define I2C_PORT i2c0
-#define I2C_SDA 0
-#define I2C_SCL 1
-#define MPU6050_ADDR 0x68
+
 
 void mpu6050_setup_i2c() {
     i2c_init(I2C_PORT, 400*1000); // common options: 100*1000 (100 kHz) or 400*1000 (400 kHz)
@@ -61,4 +58,25 @@ void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3], int16_t *temp) {
     i2c_write_blocking(I2C_PORT, MPU6050_ADDR, &reg, 1, true);
     i2c_read_blocking(I2C_PORT, MPU6050_ADDR, buffer, 2, false);
     *temp = (buffer[0]<<8) | buffer[1];
+}
+
+// Função para testar o MPU6050
+bool mpu6050_test(void) {
+    uint8_t reg = 0x75; // WHO_AM_I
+    static uint8_t id = 0;
+    // Lê o WHO_AM_I do MPU6050
+    // O valor esperado é 0x70
+    int ret = i2c_write_blocking(I2C_PORT, MPU6050_ADDR, &reg, 1, true);
+    if (ret < 0) return false;
+    ret = i2c_read_blocking(I2C_PORT, MPU6050_ADDR, &id, 1, false);
+    if (ret < 0) return false;
+    if (id != 0x70) return false;
+    // Verifica se o MPU6050 está respondendo
+    // Lê os dados brutos do acelerômetro e giroscópio
+    // Testa leitura dos dados brutos
+    int16_t accel[3], gyro[3], temp;
+    mpu6050_read_raw(accel, gyro, &temp);
+    // Verifica se valores não são todos zero (sensor desconectado)
+    if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0) return false;
+    return true;
 }
