@@ -12,7 +12,7 @@
 int main()
 {
     int16_t accel[3], gyro[3], temp;
-    float inclination;
+    float inclination_X;
 
     // Inicializa a biblioteca padrão do Pico
     stdio_init_all();
@@ -24,12 +24,13 @@ int main()
     gpio_pull_up(I2C_SDA1);
     gpio_pull_up(I2C_SCL1);
 
+    /*
     // Inicializa I2C MPU6050 (i2c0)
     i2c_init(I2C_PORT, 400000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
+    gpio_pull_up(I2C_SCL);*/
 
     // Inicializa o display OLED
     ssd1306_init(I2C_PORT1);
@@ -69,7 +70,7 @@ int main()
         // Isso fornece a inclinação em relação ao eixo X, considerando os eixos Y e
         // Z como base para o cálculo da tangente.
         // A função atan2 é usada para calcular o ângulo em radianos, que é então convertido para graus.
-        inclination = atan2(accel_g[0], sqrt(accel_g[1] * accel_g[1] + accel_g[2] * accel_g[2])) * (180.0 / M_PI);
+        inclination_X = atan2(accel_g[0], sqrt(accel_g[1] * accel_g[1] + accel_g[2] * accel_g[2])) * (180.0 / M_PI);
 
         // Exibe os dados no OLED
         ssd1306_clear();    
@@ -92,8 +93,8 @@ int main()
         //ssd1306_draw_string(0, 50, "Temp:");
         //snprintf(buffer, sizeof(buffer), "%.2f", (temp / 340.0f) + 36.53f);
         //ssd1306_draw_string(35, 50, buffer);
-        snprintf(buffer, sizeof(buffer), "%.2f", inclination);
-        ssd1306_draw_string(0, 50, "Inclinacao:");
+        snprintf(buffer, sizeof(buffer), "%.2f", inclination_X);
+        ssd1306_draw_string(0, 50, "Inclinacao_X:");
         ssd1306_draw_string(80, 50, buffer);
         ssd1306_show();
         // Aguarda um pouco antes de ler novamente
