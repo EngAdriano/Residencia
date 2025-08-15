@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "hardware/pwm.h"
 #include "bh1750.h"
 #include "ssd1306.h"
+#include "servo_sg90.h"
 
 #define I2C_PORT i2c0
 #define SDA_PIN 0
@@ -39,6 +41,10 @@ int main() {
 
     bh1750_init(I2C_PORT);
 
+    // Inicializa o servo na GPIO 2 com pulsos de 500 a 2500 microsegundos
+    servo_t servo;
+    servo_init(&servo, 2, 500, 2500);
+
     while (true) {
         float lux = bh1750_read_lux(I2C_PORT);
         printf("Luminosidade: %.2f lux\n", lux);
@@ -52,6 +58,16 @@ int main() {
         ssd1306_draw_string(35, 50, temp_str);
         ssd1306_show();
         sleep_ms(1000);
+
+        // Teste do servo alterar para executar o movimento do exercício
+        for (int ang = 0; ang <= 180; ang += 10) {
+            servo_set_angle(&servo, ang);
+            sleep_ms(300);
+        }
+        for (int ang = 180; ang >= 0; ang -= 10) {
+            servo_set_angle(&servo, ang);
+            sleep_ms(300);
+        }
     }
 }
 
