@@ -39,6 +39,7 @@ add_executable(BH1750_Lux
     BH1750_Lux.c
     lib/bh1750/bh1750.c
     lib/ssd1306/ssd1306.c
+    lib/servo_sg90/servo_sg90.c
 )
 
 pico_set_program_name(BH1750_Lux "BH1750_Lux")
@@ -52,6 +53,7 @@ pico_enable_stdio_usb(BH1750_Lux 1)
 target_link_libraries(BH1750_Lux
     pico_stdlib
     hardware_i2c
+    hardware_pwm
 )
 
 # Add the standard include files to the build
@@ -60,6 +62,7 @@ target_include_directories(BH1750_Lux PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/lib
         ${CMAKE_CURRENT_LIST_DIR}/lib/bh1750
         ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
+        ${CMAKE_CURRENT_LIST_DIR}/lib/servo_sg90
 )
 
 # Add any user requested libraries
