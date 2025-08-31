@@ -1,74 +1,100 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "hardware/pwm.h"
 #include "bh1750.h"
 #include "ssd1306.h"
 #include "servo_sg90.h"
 
-#define I2C_PORT i2c0
-#define SDA_PIN 0
-#define SCL_PIN 1
+#define ANGLE_ALERT_THRESHOLD 60.0f // Ângulo limite para alerta
+#define SERVO_MIN_ANGLE 0
+#define SERVO_MAX_ANGLE 180
 
-#define I2C_PORT1 i2c1
-#define I2C_SDA1 14
-#define I2C_SCL1 15
+// ==== Configurações I2C ====
+// BH1750 em i2c0
+#define I2C_PORT_SENSOR i2c0
+#define SDA_SENSOR 0
+#define SCL_SENSOR 1
 
+// SSD1306 em i2c1
+#define I2C_PORT_OLED i2c1
+#define SDA_OLED 14
+#define SCL_OLED 15
+
+// ==== Configuração Servo ====
+#define SERVO_PIN 2
 
 int main() {
     stdio_init_all();
 
-    i2c_init(I2C_PORT, 100 * 1000);  // 100 kHz
-    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(SDA_PIN);
-    gpio_pull_up(SCL_PIN);
+    // ---- Inicializa BH1750 ----
+    i2c_init(I2C_PORT_SENSOR, 100 * 1000);
+    gpio_set_function(SDA_SENSOR, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_SENSOR, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_SENSOR);
+    gpio_pull_up(SCL_SENSOR);
 
-    // Inicializa I2C OLED
-    i2c_init(I2C_PORT1, 400000);
-    gpio_set_function(I2C_SDA1, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL1, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA1);
-    gpio_pull_up(I2C_SCL1);
+    bh1750_init(I2C_PORT_SENSOR);
+    sleep_ms(200); // tempo para estabilizar
 
-    ssd1306_init(I2C_PORT1);
+    // ---- Inicializa SSD1306 ----
+    i2c_init(I2C_PORT_OLED, 400000);
+    gpio_set_function(SDA_OLED, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_OLED, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_OLED);
+    gpio_pull_up(SCL_OLED);
+
+    ssd1306_init(I2C_PORT_OLED);
     ssd1306_clear();
     ssd1306_draw_string(32, 0, "Embarcatech");
     ssd1306_draw_string(20, 10, "Inicializando...");
     ssd1306_show();
 
-    sleep_ms(100); // Aguarda estabilização
-
-    bh1750_init(I2C_PORT);
-
-    // Inicializa o servo na GPIO 2 com pulsos de 500 a 2500 microsegundos
+    // ---- Inicializa Servo NG90 ----
     servo_t servo;
-    servo_init(&servo, 2, 500, 2500);
+    servo_init(&servo, SERVO_PIN, 500, 2500); // pulsos de 500–2500 µs
+
+    sleep_ms(500);
 
     while (true) {
-        float lux = bh1750_read_lux(I2C_PORT);
+
+        
+        // ---- Leitura do sensor ----
+        float lux = bh1750_read_lux(I2C_PORT_SENSOR);
         printf("Luminosidade: %.2f lux\n", lux);
 
+        // ---- Calcular ângulo proporcional ----
+        // lux = 0   → 0°
+        // lux = 500 → 90°
+        // lux >=1000 → 180°
+        float angle;
+        if (lux <= 0) {
+            angle = 0;
+        } else if (lux >= 1000) {
+            angle = 180;
+        } else {
+            angle = (lux / 1000.0f) * 180.0f;
+        }
+
+        // ---- Atualizar servo ----
+        servo_set_angle(&servo, angle);
+
+        // ---- Atualizar display ----
         ssd1306_clear();
         ssd1306_draw_string(32, 0, "Embarcatech");
-        ssd1306_draw_string(20, 10, "Sensor - BH1750");
-        ssd1306_draw_string(30, 30, "Luminosidade");
-        char temp_str[16];
-        snprintf(temp_str, sizeof(temp_str), "%.2f Lux", lux);
-        ssd1306_draw_string(35, 50, temp_str);
+        ssd1306_draw_string(20, 12, "Sensor - BH1750");
+        ssd1306_draw_string(30, 28, "Luminosidade");
+
+        char lux_str[20];
+        snprintf(lux_str, sizeof(lux_str), "%.1f Lux", lux);
+        ssd1306_draw_string(25, 45, lux_str);
+
+        char ang_str[20];
+        snprintf(ang_str, sizeof(ang_str), "Servo: %.0f°", angle);
+        ssd1306_draw_string(25, 56, ang_str);
+
         ssd1306_show();
+
         sleep_ms(1000);
-
-        // Teste do servo alterar para executar o movimento do exercício
-        for (int ang = 0; ang <= 180; ang += 10) {
-            servo_set_angle(&servo, ang);
-            sleep_ms(300);
-        }
-        for (int ang = 180; ang >= 0; ang -= 10) {
-            servo_set_angle(&servo, ang);
-            sleep_ms(300);
-        }
     }
+
 }
-
-
