@@ -36,7 +36,8 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(ControlaServo 
-            ControlaServo.c 
+            ControlaServo.c
+            lib/servo/servo_velocity.c
             )
 
 pico_set_program_name(ControlaServo "ControlaServo")

@@ -1,32 +1,28 @@
 #include "pico/stdlib.h"
-#include "hardware/pwm.h"
-
-#define SERVO_PIN 18
-
-void servo_set_angle(uint slice, uint channel, float angle) {
-    if (angle < 0) angle = 0;
-    if (angle > 180) angle = 180;
-
-    // Pulso entre 500 e 2500 µs
-    uint16_t level = 500 + (uint16_t)((angle / 180.0f) * 2000);
-    pwm_set_chan_level(slice, channel, level);
-}
+#include "servo_velocity.h"
 
 int main() {
     stdio_init_all();
 
-    gpio_set_function(SERVO_PIN, GPIO_FUNC_PWM);
-    uint slice = pwm_gpio_to_slice_num(SERVO_PIN);
-    uint channel = pwm_gpio_to_channel(SERVO_PIN);
+    servo_velocity_t servo;
+    servo_init(&servo, 18, 0.02f);  // GPIO18, ganho Kp=0.02
 
-    pwm_config config = pwm_get_default_config();
-    pwm_config_set_clkdiv(&config, 125.0f);   // 1 tick = 1 µs
-    pwm_config_set_wrap(&config, 20000 - 1);  // 20 ms
-    pwm_init(slice, &config, true);
+    uint32_t counter = 0;
+    float angles[] = {0, 60, 120, 180};
+    int idx = 0;
 
-    // Envia 90° e mantém
-    servo_set_angle(slice, channel, 180);
     while (true) {
-        sleep_ms(1000);
+        servo_update(&servo); // atualiza servo continuamente
+
+        // Rotina de teste: altera alvo a cada 3s
+        // Observei que o ponto 0 é onde ele se encontra quando desligado.
+        sleep_ms(20);
+        counter += 20;
+        if (counter >= 3000) {
+            counter = 0;
+            idx++;
+            if (idx >= 4) idx = 0;
+            servo_set_target_angle(&servo, angles[idx]);
+        }
     }
 }
