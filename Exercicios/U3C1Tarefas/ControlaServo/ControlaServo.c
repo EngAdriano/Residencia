@@ -1,31 +1,28 @@
-#include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/i2c.h"
+#include "hardware/pwm.h"
 
-// I2C defines
-// This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+#define SERVO_PIN 18
 
-
-
-int main()
-{
+int main() {
     stdio_init_all();
 
-    // I2C Initialisation. Using it at 400Khz.
-    i2c_init(I2C_PORT, 400*1000);
-    
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-    // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
+    gpio_set_function(SERVO_PIN, GPIO_FUNC_PWM);
+    uint slice = pwm_gpio_to_slice_num(SERVO_PIN);
+    uint channel = pwm_gpio_to_channel(SERVO_PIN);
+
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv(&config, 125.0f);    // 1 tick = 1 µs
+    pwm_config_set_wrap(&config, 20000 - 1);   // 20 ms = 50 Hz
+    pwm_init(slice, &config, true);
 
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+        pwm_set_chan_level(slice, channel, 500);   // 0°
+        sleep_ms(2000);
+
+        pwm_set_chan_level(slice, channel, 1500);  // 90°
+        sleep_ms(2000);
+
+        pwm_set_chan_level(slice, channel, 2500);  // 180°
+        sleep_ms(2000);
     }
 }

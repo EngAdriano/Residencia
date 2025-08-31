@@ -35,7 +35,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(ControlaServo ControlaServo.c )
+add_executable(ControlaServo 
+            ControlaServo.c 
+            lib/servo/servo_sg90.c
+            )
 
 pico_set_program_name(ControlaServo "ControlaServo")
 pico_set_program_version(ControlaServo "0.1")
@@ -51,12 +54,14 @@ target_link_libraries(ControlaServo
 # Add the standard include files to the build
 target_include_directories(ControlaServo PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/servo
 )
 
 # Add any user requested libraries
 target_link_libraries(ControlaServo 
         hardware_i2c
-        
+        hardware_pwm
         )
 
 pico_add_extra_outputs(ControlaServo)
