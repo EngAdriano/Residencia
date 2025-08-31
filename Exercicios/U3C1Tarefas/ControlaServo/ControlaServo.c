@@ -5,7 +5,7 @@ int main() {
     stdio_init_all();
 
     servo_velocity_t servo;
-    servo_init(&servo, 18, 0.02f);  // GPIO18, ganho Kp=0.02
+    servo_init(&servo, 2, 0.02f);  // GPIO2, ganho Kp=0.02
 
     uint32_t counter = 0;
     float angles[] = {0, 30, 60, 90, 120, 150, 180};
