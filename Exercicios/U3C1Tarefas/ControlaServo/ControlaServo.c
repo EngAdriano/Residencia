@@ -3,6 +3,15 @@
 
 #define SERVO_PIN 18
 
+void servo_set_angle(uint slice, uint channel, float angle) {
+    if (angle < 0) angle = 0;
+    if (angle > 180) angle = 180;
+
+    // Pulso entre 500 e 2500 µs
+    uint16_t level = 500 + (uint16_t)((angle / 180.0f) * 2000);
+    pwm_set_chan_level(slice, channel, level);
+}
+
 int main() {
     stdio_init_all();
 
@@ -11,18 +20,13 @@ int main() {
     uint channel = pwm_gpio_to_channel(SERVO_PIN);
 
     pwm_config config = pwm_get_default_config();
-    pwm_config_set_clkdiv(&config, 125.0f);    // 1 tick = 1 µs
-    pwm_config_set_wrap(&config, 20000 - 1);   // 20 ms = 50 Hz
+    pwm_config_set_clkdiv(&config, 125.0f);   // 1 tick = 1 µs
+    pwm_config_set_wrap(&config, 20000 - 1);  // 20 ms
     pwm_init(slice, &config, true);
 
+    // Envia 90° e mantém
+    servo_set_angle(slice, channel, 180);
     while (true) {
-        pwm_set_chan_level(slice, channel, 500);   // 0°
-        sleep_ms(2000);
-
-        pwm_set_chan_level(slice, channel, 1500);  // 90°
-        sleep_ms(2000);
-
-        pwm_set_chan_level(slice, channel, 2500);  // 180°
-        sleep_ms(2000);
+        sleep_ms(1000);
     }
 }

@@ -37,7 +37,6 @@ pico_sdk_init()
 
 add_executable(ControlaServo 
             ControlaServo.c 
-            lib/servo/servo_sg90.c
             )
 
 pico_set_program_name(ControlaServo "ControlaServo")

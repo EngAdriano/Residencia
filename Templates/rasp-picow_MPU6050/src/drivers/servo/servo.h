@@ -12,7 +12,7 @@
 
 // Define o pino GPIO que está conectado ao fio de sinal do servo
 // como está conectado ao I2C 0 e o seu canal SDA está conectado ao pino 0
-#define SERVO_PIN 28
+#define SERVO_PIN 18
 
 // Largura do pulso em microssegundos (us) para o SG90
 #define SERVO_MIN_PULSE_US 500 // Pulso para o ângulo 0 no nosso código
