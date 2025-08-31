@@ -8,7 +8,7 @@ int main() {
     servo_init(&servo, 18, 0.02f);  // GPIO18, ganho Kp=0.02
 
     uint32_t counter = 0;
-    float angles[] = {0, 60, 120, 180};
+    float angles[] = {0, 30, 60, 90, 120, 150, 180};
     int idx = 0;
 
     while (true) {
@@ -21,7 +21,7 @@ int main() {
         if (counter >= 3000) {
             counter = 0;
             idx++;
-            if (idx >= 4) idx = 0;
+            if (idx >= 6) idx = 0;
             servo_set_target_angle(&servo, angles[idx]);
         }
     }
