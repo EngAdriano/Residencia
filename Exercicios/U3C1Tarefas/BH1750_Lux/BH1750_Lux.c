@@ -3,7 +3,7 @@
 #include "hardware/i2c.h"
 #include "bh1750.h"
 #include "ssd1306.h"
-#include "servo_sg90.h"
+#include "servo_velocity.h"
 
 #define ANGLE_ALERT_THRESHOLD 60.0f // Ângulo limite para alerta
 #define SERVO_MIN_ANGLE 0
@@ -49,52 +49,52 @@ int main() {
     ssd1306_draw_string(20, 10, "Inicializando...");
     ssd1306_show();
 
-    // ---- Inicializa Servo NG90 ----
-    servo_t servo;
-    servo_init(&servo, SERVO_PIN, 500, 2500); // pulsos de 500–2500 µs
+    servo_velocity_t servo;
+    servo_init(&servo, 2, 0.02f);  // GPIO2, ganho Kp=0.02
 
-    sleep_ms(500);
+    uint32_t last_sensor_time = 0;
+    uint32_t last_display_time = 0;
 
     while (true) {
+        // Atualiza servo a cada ~20ms
+        servo_update(&servo);
+        sleep_ms(20);
 
-        
-        // ---- Leitura do sensor ----
-        float lux = bh1750_read_lux(I2C_PORT_SENSOR);
-        printf("Luminosidade: %.2f lux\n", lux);
+        uint32_t now = to_ms_since_boot(get_absolute_time());
 
-        // ---- Calcular ângulo proporcional ----
-        // lux = 0   → 0°
-        // lux = 500 → 90°
-        // lux >=1000 → 180°
-        float angle;
-        if (lux <= 0) {
-            angle = 0;
-        } else if (lux >= 1000) {
-            angle = 180;
-        } else {
-            angle = (lux / 1000.0f) * 180.0f;
+        // ---- Leitura do sensor (a cada 1s) ----
+        if (now - last_sensor_time >= 1000) {
+            last_sensor_time = now;
+            float lux = bh1750_read_lux(I2C_PORT_SENSOR);
+            printf("Luminosidade: %.2f lux\n", lux);
+
+            // ---- Calcular ângulo proporcional ----
+            float angle;
+            if (lux <= 0) {
+                angle = 0;
+            } else if (lux >= 100) {
+                angle = 180;
+            } else {
+                angle = (lux / 1000.0f) * 180.0f;
+            }
+
+            servo_set_target_angle(&servo, angle);
+
+            // Atualiza OLED junto com leitura
+            ssd1306_clear();
+            ssd1306_draw_string(32, 0, "Embarcatech");
+            ssd1306_draw_string(20, 12, "Sensor - BH1750");
+            ssd1306_draw_string(30, 28, "Luminosidade");
+
+            char lux_str[20];
+            snprintf(lux_str, sizeof(lux_str), "%.1f Lux", lux);
+            ssd1306_draw_string(25, 45, lux_str);
+
+            char ang_str[20];
+            snprintf(ang_str, sizeof(ang_str), "Servo: %.0f", angle);
+            ssd1306_draw_string(25, 56, ang_str);
+
+            ssd1306_show();
         }
-
-        // ---- Atualizar servo ----
-        servo_set_angle(&servo, angle);
-
-        // ---- Atualizar display ----
-        ssd1306_clear();
-        ssd1306_draw_string(32, 0, "Embarcatech");
-        ssd1306_draw_string(20, 12, "Sensor - BH1750");
-        ssd1306_draw_string(30, 28, "Luminosidade");
-
-        char lux_str[20];
-        snprintf(lux_str, sizeof(lux_str), "%.1f Lux", lux);
-        ssd1306_draw_string(25, 45, lux_str);
-
-        char ang_str[20];
-        snprintf(ang_str, sizeof(ang_str), "Servo: %.0f°", angle);
-        ssd1306_draw_string(25, 56, ang_str);
-
-        ssd1306_show();
-
-        sleep_ms(1000);
     }
-
 }

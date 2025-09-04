@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.1.1)
+set(sdkVersion 2.2.0)
 set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.1.1)
+set(picotoolVersion 2.2.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -28,47 +28,41 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(BH1750_Lux C CXX ASM)
+project(servo_posicao C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(BH1750_Lux 
-    BH1750_Lux.c
-    lib/bh1750/bh1750.c
-    lib/ssd1306/ssd1306.c
-    lib/servo/servo_velocity.c
+add_executable(servo_posicao 
+            servo_posicao.c 
+            lib/servo/servo_cont.c
 )
 
-pico_set_program_name(BH1750_Lux "BH1750_Lux")
-pico_set_program_version(BH1750_Lux "0.1")
+pico_set_program_name(servo_posicao "servo_posicao")
+pico_set_program_version(servo_posicao "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(BH1750_Lux 0)
-pico_enable_stdio_usb(BH1750_Lux 1)
+pico_enable_stdio_uart(servo_posicao 0)
+pico_enable_stdio_usb(servo_posicao 1)
 
 # Add the standard library to the build
-target_link_libraries(BH1750_Lux
-    pico_stdlib
-    hardware_i2c
-    hardware_pwm
-)
+target_link_libraries(servo_posicao
+        pico_stdlib)
 
 # Add the standard include files to the build
-target_include_directories(BH1750_Lux PRIVATE
+target_include_directories(servo_posicao PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/lib
-        ${CMAKE_CURRENT_LIST_DIR}/lib/bh1750
-        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
         ${CMAKE_CURRENT_LIST_DIR}/lib/servo
 )
 
 # Add any user requested libraries
-target_link_libraries(BH1750_Lux 
-        pico_cyw43_arch_lwip_threadsafe_background
+target_link_libraries(servo_posicao 
+        hardware_i2c
+        hardware_pwm
         )
 
-pico_add_extra_outputs(BH1750_Lux)
+pico_add_extra_outputs(servo_posicao)
 
