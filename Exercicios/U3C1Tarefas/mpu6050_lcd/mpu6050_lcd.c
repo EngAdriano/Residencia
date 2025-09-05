@@ -69,7 +69,8 @@ int main()
         //soma dos quadrados dos eixos Y e Z
         // Isso fornece a inclinação em relação ao eixo X, considerando os eixos Y e
         // Z como base para o cálculo da tangente.
-        // A função atan2 é usada para calcular o ângulo em radianos, que é então convertido para graus.
+        // A função atan2 é usada para calcular o ângulo em radianos, que é então convertido para
+        // graus.
         inclination_X = atan2(accel_g[0], sqrt(accel_g[1] * accel_g[1] + accel_g[2] * accel_g[2])) * (180.0 / M_PI);
 
         // Exibe os dados no OLED
