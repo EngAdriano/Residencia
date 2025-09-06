@@ -100,6 +100,9 @@ int main() {
         // Mapeia para 0/90/180 graus
         float angle = (lux < 100) ? 0.0f : (lux < 200) ? 90.0f : 180.0f;
 
+        // Envia pela serial os valores
+        printf("Lux: %.1f, Alvo: %.0f deg, t180: %ums\n", lux, angle, (uint32_t)(180.0f / servo.deg_per_ms));
+
         // Move (simulado)
         servo_sim_set_angle(&servo, angle);
 
