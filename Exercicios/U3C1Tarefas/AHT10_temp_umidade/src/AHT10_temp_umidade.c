@@ -90,6 +90,7 @@ int main() {
                 ssd1306_draw_string(40,50, "       ");
                 ssd1306_show();
                 sleep_ms(500);
+                AHT10_ReadTemperatureHumidity(&aht10, &temp, &hum);
             }
 
         while(temp < 20){
@@ -107,6 +108,7 @@ int main() {
                 ssd1306_draw_string(40,50, "       ");
                 ssd1306_show();
                 sleep_ms(500);
+                AHT10_ReadTemperatureHumidity(&aht10, &temp, &hum);
             }
 
         ssd1306_clear();
