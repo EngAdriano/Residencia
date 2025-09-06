@@ -16,19 +16,19 @@ typedef struct {
 } servo_sim_t;
 
 /**
- * @brief Inicializa o servo contínuo (simulado), definindo o tempo para 180°
- * @param rotation_time_ms tempo (ms) medido/calibrado para ir de 0° a 180°
+ * Inicializa o servo contínuo (simulado), definindo o tempo para 180°
+ * rotation_time_ms tempo (ms) medido/calibrado para ir de 0° a 180°
  */
 void servo_sim_init(servo_sim_t *servo, uint gpio, float rotation_time_ms);
 
 /**
- * @brief Move até ângulo simulado (0..180) usando rotação por tempo
+ * Move até ângulo simulado (0..180) usando rotação por tempo
  */
 void servo_sim_set_angle(servo_sim_t *servo, float target_angle);
 
 /**
- * @brief Calibração automática: mede tempo de 0° a 180° e atualiza deg_per_ms
- *        (usa velocidade máxima; bloqueante por ~1.7s)
+ * Calibração automática: mede tempo de 0° a 180° e atualiza deg_per_ms
+ * (usa velocidade máxima; bloqueante por ~1.7s)
  */
 void servo_sim_calibrate(servo_sim_t *servo);
 

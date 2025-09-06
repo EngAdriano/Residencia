@@ -1,3 +1,15 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: bh1750_servo
+/ Descrição: Este projeto utiliza um sensor de luminosidade BH1750 para controlar a posição de um servo contínuo simulado, 
+/ exibindo informações em um display OLED SSD1306. O servo é calibrado automaticamente no boot se um botão for pressionado, 
+/ e o tempo de rotação é salvo na memória flash para uso futuro. A luminosidade ambiente determina a posição do servo: menos 
+/ de 100 lux move o servo para 0 graus, entre 100 e 200 lux para 90 graus, e acima de 200 lux para 180 graus. Os valores dos 
+/ ângulos são aproximados pois o servo não é um padrão de posição.
+/ Bibliotecas: pico-sdk, extras (servo_sim, flash_storage, ssd1306, bh1750).
+/ Autor: José Adriano
+/ Data de Criação: 06/09/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
@@ -7,15 +19,15 @@
 #include "bh1750.h"
 
 // ==== Pinos ====
-#define SERVO_PIN   2
-#define BTN_CALIB   5
+#define SERVO_PIN   2       // GPIO do servo contínuo (simulado)    
+#define BTN_CALIB   5       // Botão de calibração (ativo em nível baixo)
 
 // I2C BH1750 (i2c0)
-#define I2C_PORT_SENSOR i2c0
+#define I2C_PORT_SENSOR i2c0        
 #define SDA_SENSOR 0
 #define SCL_SENSOR 1
 
-// I2C SSD1306 (i2c1)
+// I2C SSD1306 (i2c1)   
 #define I2C_PORT_OLED i2c1
 #define SDA_OLED 14
 #define SCL_OLED 15
@@ -45,6 +57,7 @@ int main() {
     gpio_pull_up(SCL_OLED);
     ssd1306_init(I2C_PORT_OLED);
 
+    // Tela inicial
     ssd1306_clear();
     ssd1306_draw_string(18, 0, "Embarcatech Servo");
     ssd1306_draw_string(8, 12, "Inicializando...");
@@ -84,8 +97,8 @@ int main() {
         // Lê luminosidade
         float lux = bh1750_read_lux(I2C_PORT_SENSOR);
 
-        // Mapeia para 0/90/180 (ajuste os thresholds se quiser)
-        float angle = (lux < 100) ? 0.0f : (lux < 600) ? 90.0f : 180.0f;
+        // Mapeia para 0/90/180 graus
+        float angle = (lux < 100) ? 0.0f : (lux < 200) ? 90.0f : 180.0f;
 
         // Move (simulado)
         servo_sim_set_angle(&servo, angle);
