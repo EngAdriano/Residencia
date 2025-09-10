@@ -39,7 +39,6 @@ add_executable(MPU6050_Servo
             MPU6050_Servo.c 
             lib/servo/servo_sim.c
             lib/flash/flash_storage.c
-            lib/bh1750/bh1750.c
             lib/ssd1306/ssd1306.c
             lib/mpu6050/mpu6050_i2c.c
             )
@@ -61,7 +60,6 @@ target_include_directories(MPU6050_Servo PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/lib
         ${CMAKE_CURRENT_LIST_DIR}/lib/servo
         ${CMAKE_CURRENT_LIST_DIR}/lib/flash
-        ${CMAKE_CURRENT_LIST_DIR}/lib/bh1750
         ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
         ${CMAKE_CURRENT_LIST_DIR}/lib/mpu6050
 )
