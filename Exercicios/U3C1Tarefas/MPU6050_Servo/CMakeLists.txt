@@ -41,6 +41,7 @@ add_executable(MPU6050_Servo
             lib/flash/flash_storage.c
             lib/bh1750/bh1750.c
             lib/ssd1306/ssd1306.c
+            lib/mpu6050/mpu6050_i2c.c
             )
 
 pico_set_program_name(MPU6050_Servo "MPU6050_Servo")
