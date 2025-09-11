@@ -1,3 +1,15 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: MPU6050_SERVO
+/ Descrição: Este projeto utiliza um sensor de movimento MPU6050 para controlar a posição de um servo contínuo simulado, 
+/ exibindo informações em um display OLED SSD1306. O servo é calibrado automaticamente no boot se um botão for pressionado, 
+/ e o tempo de rotação é salvo na memória flash para uso futuro. A posição do servo é determinada pela inclinação do sensor: 
+/ inclinação para frente move o servo para 0 graus, inclinação para trás para 90 graus, e inclinação lateral para 180 graus. 
+/ Os valores dos ângulos são aproximados pois o servo não guarda a posição.
+/ Bibliotecas: pico-sdk, extras (servo_sim, flash_storage, ssd1306, mpu6050).
+/ Autor: José Adriano
+/ Data de Criação: 10/09/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
