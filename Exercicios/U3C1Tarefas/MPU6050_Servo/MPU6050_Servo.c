@@ -127,6 +127,7 @@ int main() {
         alert_active = (current_angle > ALERT_THRESHOLD);
 
         // Debug serial
+        printf(">");
         printf("AX=%.2fg AY=%.2fg AZ=%.2fg | GX=%d GY=%d GZ=%d | Alvo=%.0f deg | Atual=%.0f deg\n",
                accel[0]/ACCEL_SENS_2G, accel[1]/ACCEL_SENS_2G, accel[2]/ACCEL_SENS_2G,
                gyro[0], gyro[1], gyro[2], target_angle, current_angle);
