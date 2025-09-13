@@ -5,52 +5,136 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "queue.h"
 
-#define WIFI_SSID "SSID"
-#define WIFI_PASSWORD "Password"
+#include "mpu6050_i2c.h"
+#include "ssd1306.h"
 
+#define WIFI_SSID     "Lu e Deza"
+#define WIFI_PASSWORD "liukin1208"
 
-// I2C defines
-#define I2C_PORT i2c0
-#define I2C_SDA 0
-#define I2C_SCL 1
+#define I2C_MPU i2c0
+#define I2C0_SDA 0
+#define I2C0_SCL 1
+#define I2C_OLED i2c1
+#define I2C1_SDA 14
+#define I2C1_SCL 15
 
-int main()
-{
+SemaphoreHandle_t xI2C_Mutex;
+QueueHandle_t xMPU_Queue;
+
+// ---- Task: leitura MPU6050 ----
+void vTaskMPU6050(void *pvParameters){
+    mpu6050_data_t mpu;
+    if(!mpu6050_init(I2C_MPU, I2C0_SDA, I2C0_SCL)){
+        printf("Erro inicializando MPU6050\n");
+        vTaskDelete(NULL);
+    }
+
+    while(1){
+        if(xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE){
+            if(mpu6050_read(&mpu)){
+                mpu6050_calc_angles(&mpu);
+                xQueueOverwrite(xMPU_Queue, &mpu);
+            }
+            xSemaphoreGive(xI2C_Mutex);
+        }
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
+
+// ---- Task: display OLED ----
+void vTaskOLED(void *pvParameters){
+    ssd1306_t oled;
+    ssd1306_init(&oled, I2C_OLED, I2C1_SDA, I2C1_SCL);
+    ssd1306_clear(&oled);
+
+    mpu6050_data_t mpu;
+
+    while(1){
+        if(xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(500))){
+            if(xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE){
+                ssd1306_clear(&oled);
+                char buf[32];
+
+                snprintf(buf, sizeof(buf), "X: %.1f", mpu.angle_x);
+                ssd1306_draw_string(&oled, 0, 0, buf);
+
+                snprintf(buf, sizeof(buf), "Y: %.1f", mpu.angle_y);
+                ssd1306_draw_string(&oled, 0, 16, buf);
+
+                snprintf(buf, sizeof(buf), "Z: %.1f", mpu.angle_z);
+                ssd1306_draw_string(&oled, 0, 32, buf);
+
+                ssd1306_show(&oled);
+                xSemaphoreGive(xI2C_Mutex);
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
+// ---- Task: debug serial ----
+void vTaskDebug(void *pvParameters){
+    mpu6050_data_t mpu;
+    while(1){
+        if(xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(1000))){
+            printf("AX=%.2f AY=%.2f AZ=%.2f | GX=%.2f GY=%.2f GZ=%.2f | X=%.2f Y=%.2f Z=%.2f\n",
+                   mpu.ax, mpu.ay, mpu.az,
+                   mpu.gx, mpu.gy, mpu.gz,
+                   mpu.angle_x, mpu.angle_y, mpu.angle_z);
+        }
+    }
+}
+
+// ---- main ----
+int main(){
     stdio_init_all();
 
-    // Initialise the Wi-Fi chip
+    // I2C0 - MPU6050
+i2c_init(i2c0, 400*1000);
+gpio_set_function(0, GPIO_FUNC_I2C);
+gpio_set_function(1, GPIO_FUNC_I2C);
+gpio_pull_up(0);
+gpio_pull_up(1);
+
+// I2C1 - OLED
+i2c_init(i2c1, 400*1000);
+gpio_set_function(14, GPIO_FUNC_I2C);
+gpio_set_function(15, GPIO_FUNC_I2C);
+gpio_pull_up(14);
+gpio_pull_up(15);
+
+
+    // ----- Conectar Wi-Fi antes do FreeRTOS -----
     if (cyw43_arch_init()) {
-        printf("Wi-Fi init failed\n");
+        printf("Erro inicializando Wi-Fi\n");
+        return -1;
+    }
+    cyw43_arch_enable_sta_mode();
+    printf("Conectando ao Wi-Fi...\n");
+    if(cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)){
+        printf("Falha ao conectar.\n");
+    } else {
+        uint8_t *ip = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
+        printf("Wi-Fi conectado! IP: %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+    }
+
+    // ----- Criar mutex e fila -----
+    xI2C_Mutex = xSemaphoreCreateMutex();
+    xMPU_Queue = xQueueCreate(1, sizeof(mpu6050_data_t));
+
+    if(xI2C_Mutex == NULL || xMPU_Queue == NULL){
+        printf("Erro criando mutex ou fila\n");
         return -1;
     }
 
-    // I2C Initialisation. Using it at 400Khz.
-    i2c_init(I2C_PORT, 400*1000);
-    
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-    // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
+    // ----- Criar tasks -----
+    xTaskCreate(vTaskMPU6050, "MPU6050", 256, NULL, 2, NULL);
+    xTaskCreate(vTaskOLED, "OLED", 512, NULL, 1, NULL);
+    xTaskCreate(vTaskDebug, "DEBUG", 256, NULL, 1, NULL);
 
-    // Enable wifi station
-    cyw43_arch_enable_sta_mode();
+    // ----- Iniciar scheduler -----
+    vTaskStartScheduler();
 
-    printf("Conectando ao Wi-Fi...\n");
-    if (cyw43_arch_wifi_connect_timeout_ms("SSID", "Password", CYW43_AUTH_WPA2_AES_PSK, 30000)) {
-        printf("Falha ao conectar.\n");
-        return 1;
-    } else {
-        printf("Conectado.\n");
-        // Read the ip address in a human readable way
-        uint8_t *ip_address = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
-        printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
-    }
-
-    while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
-    }
+    while(1); // nunca chega aqui
 }

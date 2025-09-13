@@ -1,26 +1,23 @@
-#ifndef MPU6050_I2C_H // include guard
+#ifndef MPU6050_I2C_H
 #define MPU6050_I2C_H
 
-#include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-
-#define I2C_PORT i2c0
-#define I2C_SDA 0
-#define I2C_SCL 1
+#include <stdbool.h>
 
 #define MPU6050_ADDR 0x68
+#define MPU6050_REG_PWR_MGMT_1   0x6B
+#define MPU6050_REG_ACCEL_XOUT_H 0x3B
+#define MPU6050_REG_GYRO_XOUT_H  0x43
 
-#define ACCEL_SENS_2G  16384.0f
-#define ACCEL_SENS_4G  8192.0f
-#define ACCEL_SENS_8G  4096.0f
-#define ACCEL_SENS_16G 2048.0f
+typedef struct {
+    float ax, ay, az;   // aceleração em g
+    float gx, gy, gz;   // giros em deg/s
+    float angle_x, angle_y, angle_z; // ângulos no espaço cartesiano
+} mpu6050_data_t;
 
-void mpu6050_setup_i2c(void);
-void mpu6050_reset(void);
-uint8_t mpu6050_get_accel_range(void); // Returns 0=±2g, 1=±4g, 2=±8g, 3=±16g
-void mpu6050_set_accel_range(uint8_t range) ; // 0=±2g, 1=±4g, 2=±8g, 3=±16g
-void mpu6050_read_raw(int16_t accel[3], int16_t gyro[3], int16_t *temp);
-bool mpu6050_test(void);
+bool mpu6050_init(i2c_inst_t *i2c, uint sda, uint scl);
+bool mpu6050_read(mpu6050_data_t *data);
+void mpu6050_calc_angles(mpu6050_data_t *data);
 
-#endif // MPU6050_I2C_H
+#endif
