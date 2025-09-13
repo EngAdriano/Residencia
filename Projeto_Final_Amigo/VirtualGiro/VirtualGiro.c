@@ -12,11 +12,9 @@
 
 
 // I2C defines
-// This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+#define I2C_SDA 0
+#define I2C_SCL 1
 
 int main()
 {
@@ -40,12 +38,12 @@ int main()
     // Enable wifi station
     cyw43_arch_enable_sta_mode();
 
-    printf("Connecting to Wi-Fi...\n");
+    printf("Conectando ao Wi-Fi...\n");
     if (cyw43_arch_wifi_connect_timeout_ms("SSID", "Password", CYW43_AUTH_WPA2_AES_PSK, 30000)) {
-        printf("failed to connect.\n");
+        printf("Falha ao conectar.\n");
         return 1;
     } else {
-        printf("Connected.\n");
+        printf("Conectado.\n");
         // Read the ip address in a human readable way
         uint8_t *ip_address = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
         printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
