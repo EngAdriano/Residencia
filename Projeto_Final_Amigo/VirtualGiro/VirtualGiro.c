@@ -89,6 +89,26 @@ void vTaskDebug(void *pvParameters) {
     }
 }
 
+// ---- Task: reconexão Wi-Fi ----
+void vTaskWiFiReconnect(void *pvParameters) {
+    while (1) {
+        if (cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+            printf("Wi-Fi desconectado. Tentando reconectar...\n");
+
+            if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+                                                   CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+                printf("Falha na reconexão.\n");
+            } else {
+                struct netif *netif = &cyw43_state.netif[0];
+                ip4_addr_t ip = netif->ip_addr;
+                printf("Reconectado! IP: %s\n", ip4addr_ntoa(&ip));
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(10000)); // Verifica a cada 10 segundos
+    }
+}
+
 // ---- main ----
 int main() {
     stdio_init_all();
@@ -136,6 +156,7 @@ int main() {
     xTaskCreate(vTaskMPU6050, "MPU6050", 256, NULL, 2, NULL);
     xTaskCreate(vTaskOLED, "OLED", 512, NULL, 1, NULL);
     xTaskCreate(vTaskDebug, "DEBUG", 256, NULL, 1, NULL);
+    xTaskCreate(vTaskWiFiReconnect, "WiFiReconnect", 512, NULL, 1, NULL);
 
     // ----- Iniciar scheduler -----
     vTaskStartScheduler();
