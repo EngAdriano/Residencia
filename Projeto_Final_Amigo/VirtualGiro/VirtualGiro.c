@@ -19,6 +19,8 @@
 #define I2C1_SDA 14
 #define I2C1_SCL 15
 
+volatile bool wifi_connected = false;
+
 SemaphoreHandle_t xI2C_Mutex;
 QueueHandle_t xMPU_Queue;
 
@@ -59,6 +61,8 @@ void vTaskOLED(void *pvParameters) {
                 ssd1306_clear(&oled);
 
                 char buf[32];
+
+                // Ângulos
                 snprintf(buf, sizeof(buf), "X: %.1f", mpu.angle_x);
                 ssd1306_draw_string(&oled, 0, 0, buf);
 
@@ -67,6 +71,10 @@ void vTaskOLED(void *pvParameters) {
 
                 snprintf(buf, sizeof(buf), "Z: %.1f", mpu.angle_z);
                 ssd1306_draw_string(&oled, 0, 32, buf);
+
+                // Status Wi-Fi
+                const char *wifi_status = wifi_connected ? "Wi-Fi: OK" : "Wi-Fi: OFF";
+                ssd1306_draw_string(&oled, 0, 48, wifi_status);
 
                 ssd1306_show(&oled);
                 xSemaphoreGive(xI2C_Mutex);
@@ -92,17 +100,21 @@ void vTaskDebug(void *pvParameters) {
 // ---- Task: reconexão Wi-Fi ----
 void vTaskWiFiReconnect(void *pvParameters) {
     while (1) {
-        if (cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
+        struct netif *netif = &cyw43_state.netif[0];
+        if (ip4_addr_isany_val(netif->ip_addr)) {
+            wifi_connected = false;
             printf("Wi-Fi desconectado. Tentando reconectar...\n");
 
             if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
                                                    CYW43_AUTH_WPA2_AES_PSK, 10000)) {
                 printf("Falha na reconexão.\n");
             } else {
-                struct netif *netif = &cyw43_state.netif[0];
+                wifi_connected = true;
                 ip4_addr_t ip = netif->ip_addr;
                 printf("Reconectado! IP: %s\n", ip4addr_ntoa(&ip));
             }
+        } else {
+            wifi_connected = true;
         }
 
         vTaskDelay(pdMS_TO_TICKS(10000)); // Verifica a cada 10 segundos
