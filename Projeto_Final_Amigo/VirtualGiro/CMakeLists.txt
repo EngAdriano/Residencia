@@ -51,18 +51,10 @@ pico_enable_stdio_uart(VirtualGiro 0)
 pico_enable_stdio_usb(VirtualGiro 1)
 
 # Add the standard library to the build
-#target_link_libraries(VirtualGiro
-#        pico_stdlib
-#        FreeRTOS-Kernel
-#        FreeRTOS-Kernel-Heap4
-#)
-
 target_link_libraries(VirtualGiro
-    pico_stdlib
-    FreeRTOS-Kernel
-    FreeRTOS-Kernel-Heap4
-    hardware_i2c
-    pico_cyw43_arch_lwip_threadsafe_background
+        pico_stdlib
+        FreeRTOS-Kernel
+        FreeRTOS-Kernel-Heap4
 )
 
 # Add the standard include files to the build
@@ -74,10 +66,10 @@ target_include_directories(VirtualGiro PRIVATE
 )
 
 # Add any user requested libraries
-#target_link_libraries(VirtualGiro 
-#        hardware_i2c
-#        pico_cyw43_arch_lwip_threadsafe_background
-#        )
+target_link_libraries(VirtualGiro 
+        hardware_i2c
+        pico_cyw43_arch_lwip_threadsafe_background
+        )
 
 pico_add_extra_outputs(VirtualGiro)
 

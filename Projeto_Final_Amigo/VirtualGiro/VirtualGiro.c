@@ -5,8 +5,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "lwip/sockets.h"
-#include "lwip/inet.h"
 
 #include "mpu6050_i2c.h"
 #include "ssd1306.h"
@@ -123,7 +121,6 @@ void vTaskWiFiReconnect(void *pvParameters) {
     }
 }
 
-
 // ---- main ----
 int main() {
     stdio_init_all();
@@ -172,7 +169,7 @@ int main() {
     xTaskCreate(vTaskOLED, "OLED", 512, NULL, 1, NULL);
     xTaskCreate(vTaskDebug, "DEBUG", 256, NULL, 1, NULL);
     xTaskCreate(vTaskWiFiReconnect, "WiFiReconnect", 512, NULL, 1, NULL);
-    
+
     // ----- Iniciar scheduler -----
     vTaskStartScheduler();
 
