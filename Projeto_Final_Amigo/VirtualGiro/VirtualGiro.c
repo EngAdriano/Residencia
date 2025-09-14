@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "pico/cyw43_arch.h"
+#include "udp_sender.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -11,6 +12,9 @@
 
 #define WIFI_SSID     "Lu e Deza"
 #define WIFI_PASSWORD "liukin1208"
+
+#define SERVER_IP   "192.168.1.11"
+#define SERVER_PORT 12345
 
 #define I2C_MPU i2c0
 #define I2C0_SDA 0
@@ -121,6 +125,27 @@ void vTaskWiFiReconnect(void *pvParameters) {
     }
 }
 
+void vTaskSendUDP(void *pvParameters) {
+    struct udp_pcb *pcb = udp_sender_init();
+    if (!pcb) vTaskDelete(NULL);
+
+    mpu6050_data_t mpu;
+
+    while (1) {
+        if (wifi_connected && xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(1000))) {
+            char msg[128];
+            snprintf(msg, sizeof(msg),
+                     "{\"ax\":%.2f,\"ay\":%.2f,\"az\":%.2f,\"gx\":%.2f,\"gy\":%.2f,\"gz\":%.2f,\"x\":%.2f,\"y\":%.2f,\"z\":%.2f}",
+                     mpu.ax, mpu.ay, mpu.az,
+                     mpu.gx, mpu.gy, mpu.gz,
+                     mpu.angle_x, mpu.angle_y, mpu.angle_z);
+
+            udp_sender_send(pcb, SERVER_IP, SERVER_PORT, msg);
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
 // ---- main ----
 int main() {
     stdio_init_all();
@@ -165,10 +190,11 @@ int main() {
     }
 
     // ----- Criar tasks -----
-    xTaskCreate(vTaskMPU6050, "MPU6050", 256, NULL, 2, NULL);
-    xTaskCreate(vTaskOLED, "OLED", 512, NULL, 1, NULL);
-    xTaskCreate(vTaskDebug, "DEBUG", 256, NULL, 1, NULL);
+    xTaskCreate(vTaskMPU6050, "MPU6050", 512, NULL, 2, NULL);
+    xTaskCreate(vTaskOLED, "OLED", 1024, NULL, 1, NULL);
+    xTaskCreate(vTaskDebug, "DEBUG", 512, NULL, 1, NULL);
     xTaskCreate(vTaskWiFiReconnect, "WiFiReconnect", 512, NULL, 1, NULL);
+    xTaskCreate(vTaskSendUDP, "SendUDP", 512, NULL, 1, NULL);
 
     // ----- Iniciar scheduler -----
     vTaskStartScheduler();

@@ -41,6 +41,7 @@ add_executable(VirtualGiro
             VirtualGiro.c 
             lib/mpu6050/mpu6050_i2c.c
             lib/ssd1306/ssd1306.c
+            lib/udpSender/udp_sender.c
             )
 
 pico_set_program_name(VirtualGiro "VirtualGiro")
@@ -63,6 +64,7 @@ target_include_directories(VirtualGiro PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/lib
         ${CMAKE_CURRENT_LIST_DIR}/lib/mpu6050
         ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
+        ${CMAKE_CURRENT_LIST_DIR}/lib/udpSender
 )
 
 # Add any user requested libraries
