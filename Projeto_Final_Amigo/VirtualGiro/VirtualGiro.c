@@ -23,16 +23,16 @@ SemaphoreHandle_t xI2C_Mutex;
 QueueHandle_t xMPU_Queue;
 
 // ---- Task: leitura MPU6050 ----
-void vTaskMPU6050(void *pvParameters){
+void vTaskMPU6050(void *pvParameters) {
     mpu6050_data_t mpu;
-    if(!mpu6050_init(I2C_MPU, I2C0_SDA, I2C0_SCL)){
+    if (!mpu6050_init(I2C_MPU, I2C0_SDA, I2C0_SCL)) {
         printf("Erro inicializando MPU6050\n");
         vTaskDelete(NULL);
     }
 
-    while(1){
-        if(xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE){
-            if(mpu6050_read(&mpu)){
+    while (1) {
+        if (xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE) {
+            if (mpu6050_read(&mpu)) {
                 mpu6050_calc_angles(&mpu);
                 xQueueOverwrite(xMPU_Queue, &mpu);
             }
@@ -43,19 +43,22 @@ void vTaskMPU6050(void *pvParameters){
 }
 
 // ---- Task: display OLED ----
-void vTaskOLED(void *pvParameters){
+void vTaskOLED(void *pvParameters) {
     ssd1306_t oled;
     ssd1306_init(&oled, I2C_OLED, I2C1_SDA, I2C1_SCL);
+
     ssd1306_clear(&oled);
+    ssd1306_draw_string(&oled, 0, 0, "Iniciando...");
+    ssd1306_show(&oled);
 
     mpu6050_data_t mpu;
 
-    while(1){
-        if(xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(500))){
-            if(xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE){
+    while (1) {
+        if (xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(500))) {
+            if (xSemaphoreTake(xI2C_Mutex, portMAX_DELAY) == pdTRUE) {
                 ssd1306_clear(&oled);
-                char buf[32];
 
+                char buf[32];
                 snprintf(buf, sizeof(buf), "X: %.1f", mpu.angle_x);
                 ssd1306_draw_string(&oled, 0, 0, buf);
 
@@ -74,10 +77,10 @@ void vTaskOLED(void *pvParameters){
 }
 
 // ---- Task: debug serial ----
-void vTaskDebug(void *pvParameters){
+void vTaskDebug(void *pvParameters) {
     mpu6050_data_t mpu;
-    while(1){
-        if(xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(1000))){
+    while (1) {
+        if (xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(1000))) {
             printf("AX=%.2f AY=%.2f AZ=%.2f | GX=%.2f GY=%.2f GZ=%.2f | X=%.2f Y=%.2f Z=%.2f\n",
                    mpu.ax, mpu.ay, mpu.az,
                    mpu.gx, mpu.gy, mpu.gz,
@@ -87,23 +90,22 @@ void vTaskDebug(void *pvParameters){
 }
 
 // ---- main ----
-int main(){
+int main() {
     stdio_init_all();
 
     // I2C0 - MPU6050
-i2c_init(i2c0, 400*1000);
-gpio_set_function(0, GPIO_FUNC_I2C);
-gpio_set_function(1, GPIO_FUNC_I2C);
-gpio_pull_up(0);
-gpio_pull_up(1);
+    i2c_init(i2c0, 400 * 1000);
+    gpio_set_function(0, GPIO_FUNC_I2C);
+    gpio_set_function(1, GPIO_FUNC_I2C);
+    gpio_pull_up(0);
+    gpio_pull_up(1);
 
-// I2C1 - OLED
-i2c_init(i2c1, 400*1000);
-gpio_set_function(14, GPIO_FUNC_I2C);
-gpio_set_function(15, GPIO_FUNC_I2C);
-gpio_pull_up(14);
-gpio_pull_up(15);
-
+    // I2C1 - OLED
+    i2c_init(i2c1, 400 * 1000);
+    gpio_set_function(14, GPIO_FUNC_I2C);
+    gpio_set_function(15, GPIO_FUNC_I2C);
+    gpio_pull_up(14);
+    gpio_pull_up(15);
 
     // ----- Conectar Wi-Fi antes do FreeRTOS -----
     if (cyw43_arch_init()) {
@@ -112,18 +114,20 @@ gpio_pull_up(15);
     }
     cyw43_arch_enable_sta_mode();
     printf("Conectando ao Wi-Fi...\n");
-    if(cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)){
+    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+                                           CYW43_AUTH_WPA2_AES_PSK, 30000)) {
         printf("Falha ao conectar.\n");
     } else {
-        uint8_t *ip = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
-        printf("Wi-Fi conectado! IP: %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+        struct netif *netif = &cyw43_state.netif[0];
+        ip4_addr_t ip = netif->ip_addr;
+        printf("Wi-Fi conectado! IP: %s\n", ip4addr_ntoa(&ip));
     }
 
     // ----- Criar mutex e fila -----
     xI2C_Mutex = xSemaphoreCreateMutex();
     xMPU_Queue = xQueueCreate(1, sizeof(mpu6050_data_t));
 
-    if(xI2C_Mutex == NULL || xMPU_Queue == NULL){
+    if (xI2C_Mutex == NULL || xMPU_Queue == NULL) {
         printf("Erro criando mutex ou fila\n");
         return -1;
     }
@@ -136,5 +140,5 @@ gpio_pull_up(15);
     // ----- Iniciar scheduler -----
     vTaskStartScheduler();
 
-    while(1); // nunca chega aqui
+    while (1); // nunca chega aqui
 }
