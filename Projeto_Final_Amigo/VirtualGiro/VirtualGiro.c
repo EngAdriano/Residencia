@@ -10,8 +10,8 @@
 #include "mpu6050_i2c.h"
 #include "ssd1306.h"
 
-#define WIFI_SSID     "xxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxx"
+#define WIFI_SSID     "Lu e Deza"
+#define WIFI_PASSWORD "liukin1208"
 
 #define SERVER_IP   "192.168.1.11"
 #define SERVER_PORT 12345
@@ -135,9 +135,10 @@ void vTaskSendUDP(void *pvParameters) {
         if (wifi_connected && xQueueReceive(xMPU_Queue, &mpu, pdMS_TO_TICKS(1000))) {
             char msg[128];
             snprintf(msg, sizeof(msg),
-                     "{\"ax\":%.2f,\"ay\":%.2f,\"az\":%.2f,\"gx\":%.2f,\"gy\":%.2f,\"gz\":%.2f,\"x\":%.2f,\"y\":%.2f,\"z\":%.2f}",
-                     mpu.ax, mpu.ay, mpu.az,
-                     mpu.gx, mpu.gy, mpu.gz,
+                     //"{\"ax\":%.2f,\"ay\":%.2f,\"az\":%.2f,\"gx\":%.2f,\"gy\":%.2f,\"gz\":%.2f,\"x\":%.2f,\"y\":%.2f,\"z\":%.2f}",
+                     //mpu.ax, mpu.ay, mpu.az,
+                     //mpu.gx, mpu.gy, mpu.gz,
+                      "{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f}",
                      mpu.angle_x, mpu.angle_y, mpu.angle_z);
 
             udp_sender_send(pcb, SERVER_IP, SERVER_PORT, msg);
