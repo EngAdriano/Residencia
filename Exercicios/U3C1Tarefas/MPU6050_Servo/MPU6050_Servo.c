@@ -21,8 +21,6 @@
 // ==== Pinos ====
 #define SERVO_PIN    2     // GPIO do servo contínuo (simulado)
 #define BTN_CALIB    5     // Botão de calibração (ativo em nível baixo)
-#define BUZZER1_PIN  10    // Buzzer 1
-#define BUZZER2_PIN  27    // Buzzer 2
 
 // I2C OLED (i2c1)
 #define I2C_PORT_OLED i2c1
@@ -39,15 +37,6 @@ int main() {
     gpio_init(BTN_CALIB);
     gpio_set_dir(BTN_CALIB, GPIO_IN);
     gpio_pull_up(BTN_CALIB);
-
-    // === Buzzers ===
-    gpio_init(BUZZER1_PIN);
-    gpio_set_dir(BUZZER1_PIN, GPIO_OUT);
-    gpio_put(BUZZER1_PIN, 0);
-
-    gpio_init(BUZZER2_PIN);
-    gpio_set_dir(BUZZER2_PIN, GPIO_OUT);
-    gpio_put(BUZZER2_PIN, 0);
 
     // === Inicializa MPU6050 (I2C0) ===
     mpu6050_setup_i2c();
@@ -149,17 +138,6 @@ int main() {
         // Alerta piscante + beep alternado
         if (alert_active && (frame % 2 == 0)) {
             ssd1306_draw_string(6, 52, alert_msg);
-
-            if (use_buzzer1) {
-                gpio_put(BUZZER1_PIN, 1);
-                sleep_ms(100);
-                gpio_put(BUZZER1_PIN, 0);
-            } else {
-                gpio_put(BUZZER2_PIN, 1);
-                sleep_ms(100);
-                gpio_put(BUZZER2_PIN, 0);
-            }
-            use_buzzer1 = !use_buzzer1; // alterna buzzer
         }
 
         ssd1306_show();
