@@ -15,9 +15,9 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.2.0)
-set(toolchainVersion 14_2_Rel1)
-set(picotoolVersion 2.2.0)
+set(sdkVersion 1.5.1)
+set(toolchainVersion 13_2_Rel1)
+set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
     include(${picoVscode})
@@ -28,38 +28,43 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(cartaoSD C CXX ASM)
+project(sd_card C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# Add FatFs library
+add_subdirectory(FatFs_SPI build)
+
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(cartaoSD 
-            cartaoSD.c 
+add_executable(sd_card 
+        sd_card.c 
+        hw_config.c
 )
 
-pico_set_program_name(cartaoSD "cartaoSD")
-pico_set_program_version(cartaoSD "0.1")
+pico_set_program_name(sd_card "sd_card")
+pico_set_program_version(sd_card "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(cartaoSD 0)
-pico_enable_stdio_usb(cartaoSD 1)
+pico_enable_stdio_uart(sd_card 0)
+pico_enable_stdio_usb(sd_card 1)
 
 # Add the standard library to the build
-target_link_libraries(cartaoSD
-        pico_stdlib)
+target_link_libraries(sd_card
+        pico_stdlib
+        FatFs_SPI
+)
 
 # Add the standard include files to the build
-target_include_directories(cartaoSD PRIVATE
+target_include_directories(sd_card PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(cartaoSD 
-        hardware_spi
+target_link_libraries(sd_card 
         
         )
 
-pico_add_extra_outputs(cartaoSD)
+pico_add_extra_outputs(sd_card)
 

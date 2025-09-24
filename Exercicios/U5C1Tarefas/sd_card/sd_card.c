@@ -1,60 +1,45 @@
-#include "sd_card.h"
-#include "hw_config.h"   // Necessário para ligação com FatFS e pico-sdk
+#include <stdio.h>
+#include "pico/stdlib.h"
+
+#include "f_util.h"
 #include "ff.h"
-#include "diskio.h"
-#include <string.h>
+#include "rtc.h"
 
-// Inicializa o cartão SD e monta o sistema de arquivos
-bool sd_init(sd_card_t *sd) {
-    FRESULT fr;
-    if (!sd) return false;
+#include "hw_config.h"
 
-    // Monta o sistema de arquivos
-    fr = f_mount(&sd->fs, "", 1);
-    if (fr != FR_OK) {
-        sd->mounted = false;
-        return false;
+
+
+int main()
+{
+    stdio_init_all();
+    time_init();
+
+    puts("Hello, world!");
+
+    sd_card_t *pSD = sd_get_by_num(0);
+    
+    FRESULT fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
+    if (FR_OK != fr) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
+    FIL fil;
+    const char* const filename = "teste.txt";
+    fr = f_open(&fil, filename, FA_OPEN_APPEND | FA_WRITE);
+    if (FR_OK != fr && FR_EXIST != fr)
+        panic("f_open(%s) error: %s (%d)\n", filename, FRESULT_str(fr), fr);
+    if (f_printf(&fil, "Hello, world!\n") < 0) {
+        printf("f_printf failed\n");
     }
-    sd->mounted = true;
-    return true;
-}
-
-// Abre arquivo
-bool sd_open_file(sd_card_t *sd, const char *filename, BYTE mode) {
-    if (!sd || !sd->mounted) return false;
-    FRESULT fr = f_open(&sd->file, filename, mode);
-    return (fr == FR_OK);
-}
-
-// Escreve texto no arquivo
-bool sd_write_file(sd_card_t *sd, const char *text) {
-    if (!sd || !sd->mounted) return false;
-    UINT bw;
-    FRESULT fr = f_write(&sd->file, text, strlen(text), &bw);
-    return (fr == FR_OK && bw == strlen(text));
-}
-
-// Lê conteúdo do arquivo
-bool sd_read_file(sd_card_t *sd, char *buffer, UINT bufsize) {
-    if (!sd || !sd->mounted) return false;
-    UINT br;
-    FRESULT fr = f_read(&sd->file, buffer, bufsize - 1, &br);
-    if (fr == FR_OK) {
-        buffer[br] = '\0'; // Garante string terminada
-        return true;
+    fr = f_close(&fil);
+    if (FR_OK != fr) {
+        printf("f_close error: %s (%d)\n", FRESULT_str(fr), fr);
     }
-    return false;
-}
+    f_unmount(pSD->pcName);
+    
 
-// Fecha arquivo
-void sd_close_file(sd_card_t *sd) {
-    if (!sd) return;
-    f_close(&sd->file);
-}
+    puts("Goodbye, world!");
 
-// Desmonta SD
-void sd_deinit(sd_card_t *sd) {
-    if (!sd) return;
-    f_mount(NULL, "", 0);
-    sd->mounted = false;
+    while (true) {
+       // printf("Hello, world!\n");
+       puts("Hello world!");
+        sleep_ms(1000);
+    }
 }
