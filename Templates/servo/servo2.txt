@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "hardware/pwm.h"
+#include <stdlib.h>
+
+
+#define SERVO_PIN   2   // GP2 -> sinal do servo
+#define BTN_A_PIN   5   // GP5 -> Botão A
+#define BTN_B_PIN   6   // GP6 -> Botão B
+
+
+#define SERVO_NEUTRAL_US 1500.0f   // neutro = parado
+#define SERVO_RANGE_US   1000.0f   // ±1000us (500–2500 us)
+
+
+// controle
+#define DEBOUNCE_MS 200
+static volatile int8_t g_speed = 0;  // -100 a +100
+static volatile uint32_t last_press_A = 0;
+static volatile uint32_t last_press_B = 0;
+
+
+// Inicializa PWM
+static inline void servo_pwm_init(void) {
+    gpio_set_function(SERVO_PIN, GPIO_FUNC_PWM);
+    uint slice = pwm_gpio_to_slice_num(SERVO_PIN);
+
+
+    pwm_config cfg = pwm_get_default_config();
+    pwm_config_set_clkdiv(&cfg, 125.0f);   // 1 tick = 1 µs
+    pwm_config_set_wrap(&cfg, 20000 - 1);  // 20ms período
+    pwm_init(slice, &cfg, true);
+}
+
+
+// Ajusta pulso em us
+static inline void servo_pulse_us(float us) {
+    uint slice = pwm_gpio_to_slice_num(SERVO_PIN);
+    uint chan  = pwm_gpio_to_channel(SERVO_PIN);
+    pwm_set_chan_level(slice, chan, (uint16_t)(us));
+}
+
+
+// Define velocidade (-100 = máx anti-horário, 0 = parado, +100 = máx horário)
+static inline void servo_set_speed(int8_t speed) {
+    if (speed < -100) speed = -100;
+    if (speed > 100)  speed = 100;
+    g_speed = speed;
+
+
+    float us = SERVO_NEUTRAL_US + (speed / 100.0f) * SERVO_RANGE_US;
+    servo_pulse_us(us);
+    printf("Velocidade: %d\n", g_speed);
+}
+
+
+// Interrupção dos botões
+void gpio_irq_handler(uint gpio, uint32_t events) {
+    uint32_t now = to_ms_since_boot(get_absolute_time());
+
+
+    if (gpio == BTN_A_PIN && (events & GPIO_IRQ_EDGE_FALL)) {
+        if (now - last_press_A > DEBOUNCE_MS) {
+            servo_set_speed(g_speed + 10); // aumenta velocidade
+            last_press_A = now;
+        }
+    }
+    else if (gpio == BTN_B_PIN && (events & GPIO_IRQ_EDGE_FALL)) {
+        if (now - last_press_B > DEBOUNCE_MS) {
+            servo_set_speed(g_speed - 10); // diminui velocidade
+            last_press_B = now;
+        }
+    }
+}
+
+
+// Configura botões
+static void buttons_init(void) {
+    gpio_init(BTN_A_PIN);
+    gpio_set_dir(BTN_A_PIN, GPIO_IN);
+    gpio_pull_up(BTN_A_PIN);
+
+
+    gpio_init(BTN_B_PIN);
+    gpio_set_dir(BTN_B_PIN, GPIO_IN);
+    gpio_pull_up(BTN_B_PIN);
+
+
+    gpio_set_irq_enabled_with_callback(BTN_A_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
+    gpio_set_irq_enabled(BTN_B_PIN, GPIO_IRQ_EDGE_FALL, true);
+}
+
+
+int main() {
+    stdio_init_all();
+    servo_pwm_init();
+    buttons_init();
+
+
+    servo_set_speed(0); // inicia parado
+
+
+    printf("Controle de servo 360 contínuo (velocidade)\n");
+    printf("Botão A: aumenta velocidade\n");
+    printf("Botão B: diminui velocidade\n");
+    printf("Digite valor de -100 a 100 na serial para definir velocidade\n");
+
+
+    while (true) {
+        char buffer[32];
+        if (fgets(buffer, sizeof(buffer), stdin)) {
+            int val = atoi(buffer);
+            servo_set_speed(val);
+        }
+        sleep_ms(10);
+    }
+}
