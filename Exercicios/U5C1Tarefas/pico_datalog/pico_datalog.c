@@ -2,6 +2,11 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "pico/cyw43_arch.h"
+#include "f_util.h"
+#include "ff.h"
+#include "rtc.h"
+
+#include "hw_config.h"
 
 // Definições da SPI
 // We are going to use SPI 0, and allocate it to the following GPIO pins

@@ -33,9 +33,14 @@ project(pico_datalog C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+add_subdirectory(../FatFs_SPI build)
+
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(pico_datalog pico_datalog.c )
+add_executable(pico_datalog 
+        pico_datalog.c 
+        hw_config.c
+)
 
 pico_set_program_name(pico_datalog "pico_datalog")
 pico_set_program_version(pico_datalog "0.1")
@@ -46,7 +51,9 @@ pico_enable_stdio_usb(pico_datalog 1)
 
 # Add the standard library to the build
 target_link_libraries(pico_datalog
-        pico_stdlib)
+        pico_stdlib
+        FatFs_SPI
+        )
 
 # Add the standard include files to the build
 target_include_directories(pico_datalog PRIVATE
