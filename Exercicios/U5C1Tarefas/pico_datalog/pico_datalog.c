@@ -19,10 +19,10 @@
 #define PIN_MOSI 19
 */
 
-//#define WIFI_SSID "ITSelf"
-//#define WIFI_PASSWORD "code2020"
-#define WIFI_SSID "Lu e Deza"
-#define WIFI_PASSWORD "liukin1208"
+#define WIFI_SSID "ITSelf"
+#define WIFI_PASSWORD "code2020"
+//#define WIFI_SSID "Lu e Deza"
+//#define WIFI_PASSWORD "liukin1208"
 
 
 int main()
