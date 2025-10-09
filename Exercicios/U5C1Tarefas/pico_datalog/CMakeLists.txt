@@ -40,6 +40,8 @@ add_subdirectory(../FatFs_SPI build)
 add_executable(pico_datalog 
         pico_datalog.c 
         hw_config.c
+        lib/aht10/aht10.c
+        lib/ssd1306/ssd1306.c
 )
 
 pico_set_program_name(pico_datalog "pico_datalog")
@@ -58,10 +60,14 @@ target_link_libraries(pico_datalog
 # Add the standard include files to the build
 target_include_directories(pico_datalog PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/aht10
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
 )
 
 # Add any user requested libraries
-target_link_libraries(pico_datalog 
+target_link_libraries(pico_datalog
+        hardware_i2c
         hardware_spi
         pico_cyw43_arch_lwip_threadsafe_background
         )
