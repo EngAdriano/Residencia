@@ -92,7 +92,7 @@ int main()
         printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
     }
 
-    /*
+ 
     sd_card_t *pSD = sd_get_by_num(0);
     FRESULT fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
     if (FR_OK != fr) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
@@ -109,9 +109,7 @@ int main()
         printf("f_close error: %s (%d)\n", FRESULT_str(fr), fr);
     }
     f_unmount(pSD->pcName);
-
-    puts("Goodbye, world!");
-    */
+   
 
     while (true) {
         float temp, hum;
