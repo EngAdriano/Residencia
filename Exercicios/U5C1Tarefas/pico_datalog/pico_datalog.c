@@ -7,14 +7,13 @@
 #include "rtc.h"
 #include "aht10.h"
 #include "ssd1306.h"
-
 #include "hw_config.h"
 
 // I2C usado: I2C0 com SDA=GPIO0, SCL=GPIO1
 #define I2C_PORT0 i2c0
 #define I2C_SDA0 0
 #define I2C_SCL0 1
-
+// I2C usado: I2C1 com SDA=GPIO14, SCL=GPI15
 #define I2C_PORT1 i2c1
 #define I2C_SDA1 14
 #define I2C_SCL1 15
