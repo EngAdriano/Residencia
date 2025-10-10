@@ -35,7 +35,13 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(datalog_pico datalog_pico.c )
+add_executable(datalog_pico 
+        datalog_pico.c
+        lib/aht10/aht10.c
+        lib/sdcard/sdcard.c
+        lib/ssd1306/ssd1306.c
+        lib/wifi/wifi.c
+)
 
 pico_set_program_name(datalog_pico "datalog_pico")
 pico_set_program_version(datalog_pico "0.1")
@@ -51,6 +57,12 @@ target_link_libraries(datalog_pico
 # Add the standard include files to the build
 target_include_directories(datalog_pico PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/inc
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/aht10
+        ${CMAKE_CURRENT_LIST_DIR}/lib/sdcard
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
+        ${CMAKE_CURRENT_LIST_DIR}/lib/wifi
 )
 
 # Add any user requested libraries
