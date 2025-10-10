@@ -28,49 +28,43 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(datalog_pico C CXX ASM)
+project(pico_datalog C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+add_subdirectory(../FatFs_SPI build)
+
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(datalog_pico 
-        datalog_pico.c
-        lib/aht10/aht10.c
-        lib/sdcard/sdcard.c
-        lib/ssd1306/ssd1306.c
-        lib/wifi/wifi.c
+add_executable(pico_datalog 
+        pico_datalog.c 
+        hw_config.c
 )
 
-pico_set_program_name(datalog_pico "datalog_pico")
-pico_set_program_version(datalog_pico "0.1")
+pico_set_program_name(pico_datalog "pico_datalog")
+pico_set_program_version(pico_datalog "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(datalog_pico 0)
-pico_enable_stdio_usb(datalog_pico 1)
+pico_enable_stdio_uart(pico_datalog 0)
+pico_enable_stdio_usb(pico_datalog 1)
 
 # Add the standard library to the build
-target_link_libraries(datalog_pico
-        pico_stdlib)
+target_link_libraries(pico_datalog
+        pico_stdlib
+        FatFs_SPI
+        )
 
 # Add the standard include files to the build
-target_include_directories(datalog_pico PRIVATE
+target_include_directories(pico_datalog PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/inc
-        ${CMAKE_CURRENT_LIST_DIR}/lib
-        ${CMAKE_CURRENT_LIST_DIR}/lib/aht10
-        ${CMAKE_CURRENT_LIST_DIR}/lib/sdcard
-        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
-        ${CMAKE_CURRENT_LIST_DIR}/lib/wifi
 )
 
 # Add any user requested libraries
-target_link_libraries(datalog_pico 
+target_link_libraries(pico_datalog 
         hardware_spi
-        hardware_i2c
         pico_cyw43_arch_lwip_threadsafe_background
         )
 
-pico_add_extra_outputs(datalog_pico)
+pico_add_extra_outputs(pico_datalog)
 
