@@ -19,10 +19,10 @@
 #define PIN_MOSI 19
 */
 
-#define WIFI_SSID "ITSelf"
-#define WIFI_PASSWORD "code2020"
-//#define WIFI_SSID "Lu e Deza"
-//#define WIFI_PASSWORD "liukin1208"
+//#define WIFI_SSID "ITSelf"
+//#define WIFI_PASSWORD "code2020"
+#define WIFI_SSID "Lu e Deza"
+#define WIFI_PASSWORD "liukin1208"
 
 
 int main()
@@ -68,11 +68,11 @@ int main()
     FRESULT fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
     if (FR_OK != fr) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
     FIL fil;
-    const char* const filename = "filename.txt";
+    const char* const filename = "Arquivo.txt";
     fr = f_open(&fil, filename, FA_OPEN_APPEND | FA_WRITE);
     if (FR_OK != fr && FR_EXIST != fr)
         panic("f_open(%s) error: %s (%d)\n", filename, FRESULT_str(fr), fr);
-    if (f_printf(&fil, "Hello, world!\n") < 0) {
+    if (f_printf(&fil, "Temperatura: 30°C\n") < 0) {
         printf("f_printf failed\n");
     }
     fr = f_close(&fil);
