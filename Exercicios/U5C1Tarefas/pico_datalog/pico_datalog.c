@@ -8,6 +8,17 @@
 
 #include "hw_config.h"
 
+// Definições da SPI
+// We are going to use SPI 0, and allocate it to the following GPIO pins
+// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
+/*
+#define SPI_PORT spi0
+#define PIN_MISO 16
+#define PIN_CS   17
+#define PIN_SCK  18
+#define PIN_MOSI 19
+*/
+
 #define WIFI_SSID "ITSelf"
 #define WIFI_PASSWORD "code2020"
 //#define WIFI_SSID "Lu e Deza"
@@ -24,6 +35,20 @@ int main()
         printf("Wi-Fi init failed\n");
         return -1;
     }
+
+    /*
+    // SPI initialisation. This example will use SPI at 1MHz.
+    spi_init(SPI_PORT, 1000*1000);
+    gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_CS,   GPIO_FUNC_SIO);
+    gpio_set_function(PIN_SCK,  GPIO_FUNC_SPI);
+    gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
+    
+    // Chip select is active-low, so we'll initialise it to a driven-high state
+    gpio_set_dir(PIN_CS, GPIO_OUT);
+    gpio_put(PIN_CS, 1);
+    // For more examples of SPI use see https://github.com/raspberrypi/pico-examples/tree/master/spi
+    */
 
     // Enable wifi station
     cyw43_arch_enable_sta_mode();
@@ -43,11 +68,11 @@ int main()
     FRESULT fr = f_mount(&pSD->fatfs, pSD->pcName, 1);
     if (FR_OK != fr) panic("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
     FIL fil;
-    const char* const filename = "Arquivo.txt";
+    const char* const filename = "filename.txt";
     fr = f_open(&fil, filename, FA_OPEN_APPEND | FA_WRITE);
     if (FR_OK != fr && FR_EXIST != fr)
         panic("f_open(%s) error: %s (%d)\n", filename, FRESULT_str(fr), fr);
-    if (f_printf(&fil, "Temperatura: 30°C\n") < 0) {
+    if (f_printf(&fil, "Hello, world!\n") < 0) {
         printf("f_printf failed\n");
     }
     fr = f_close(&fil);
