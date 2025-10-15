@@ -4,13 +4,13 @@
 #include <time.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "hardware/rtc.h"
 #include "pico/cyw43_arch.h"
 
 #include "aht10.h"
 #include "ssd1306.h"
 #include "f_util.h"
 #include "ff.h"
-#include "rtc.h"
 #include "sd_card.h"      // seu helper para sd_get_by_num()
 #include "hw_config.h"
 
@@ -38,6 +38,7 @@ void display_values(float temp, float hum, bool show_recording);
 void display_alert(const char *msg);
 bool init_wifi_and_print_ip(void);
 bool get_timestamp_string(char *buf, size_t len);
+void set_initial_time(void);
 
 // -------- I2C adapter para AHT10 (usa I2C_PORT0) ----------
 int i2c_write(uint8_t addr, const uint8_t *data, uint16_t len) {
@@ -54,7 +55,7 @@ void delay_ms(uint32_t ms) {
     sleep_ms(ms);
 }
 
-// -------- Timestamp helper (usa time()/localtime() se disponível) ----------
+// -------- Timestamp helper (usa time()/localtime() com RTC) ----------
 bool get_timestamp_string(char *buf, size_t len) {
     time_t t = time(NULL);
     if (t == (time_t)(-1)) {
@@ -69,7 +70,7 @@ bool get_timestamp_string(char *buf, size_t len) {
     return true;
 }
 
-// -------- grava uma linha no SD (monta, abre, escreve, fecha, desmonta) ----------
+// -------- Grava uma linha no SD ----------
 void log_data(float temp, float hum) {
     sd_card_t *pSD = sd_get_by_num(0);
     if (!pSD) {
@@ -112,7 +113,7 @@ void log_data(float temp, float hum) {
     f_unmount(pSD->pcName);
 }
 
-// -------- exibe valores no OLED; se show_recording==true, mostra "Gravando..." --------
+// -------- exibe valores no OLED --------
 void display_values(float temp, float hum, bool show_recording) {
     char buf[32];
     ssd1306_clear();
@@ -129,10 +130,19 @@ void display_values(float temp, float hum, bool show_recording) {
         ssd1306_draw_string(74, 0, "Gravando");
     }
 
+    // exibe horário atual
+    char ts[16];
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    if (tm) {
+        snprintf(ts, sizeof(ts), "%02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
+        ssd1306_draw_string(80, 12, ts);
+    }
+
     ssd1306_show();
 }
 
-// -------- alerta (mensagem fixa) ----------
+// -------- alerta ----------
 void display_alert(const char *msg) {
     ssd1306_clear();
     ssd1306_draw_string(16, 0, "Embarcatech");
@@ -141,7 +151,7 @@ void display_alert(const char *msg) {
     ssd1306_show();
 }
 
-// -------- opcional: Wi-Fi init para mostrar IP (mantive do exemplo) ----------
+// -------- opcional: Wi-Fi init ----------
 bool init_wifi_and_print_ip(void) {
     if (cyw43_arch_init()) {
         printf("Wi-Fi init failed\n");
@@ -161,13 +171,28 @@ bool init_wifi_and_print_ip(void) {
     }
 }
 
+// -------- Define hora inicial manualmente ----------
+void set_initial_time(void) {
+    datetime_t t = {
+        .year  = 2025,
+        .month = 10,
+        .day   = 15,
+        .dotw  = 3,   // 0=domingo, 1=segunda ...
+        .hour  = 14,
+        .min   = 30,
+        .sec   = 0
+    };
+    rtc_init();            // inicializa RTC
+    rtc_set_datetime(&t);  // define hora inicial
+}
+
 // ========================= main ============================
 int main(void) {
     stdio_init_all();
     sleep_ms(200);
 
-    // Inicializa time/rtc (você já tinha time_init no projeto)
-    time_init();
+    // Inicializa hora inicial
+    set_initial_time();
 
     // I2C sensor (I2C0)
     i2c_init(I2C_PORT0, 100 * 1000); // 100 kHz
@@ -225,15 +250,9 @@ int main(void) {
                     f_printf(&fil, "DataHora;Temperatura(C);Umidade(%)\n");
                 }
                 f_close(&fil);
-            } else {
-                printf("f_open header error: %s (%d)\n", FRESULT_str(fr), fr);
             }
             f_unmount(pSD->pcName);
-        } else {
-            printf("f_mount error on header: %s (%d)\n", FRESULT_str(fr), fr);
         }
-    } else {
-        printf("SD card not available during header creation\n");
     }
 
     // Mostra mensagem inicial
@@ -244,11 +263,11 @@ int main(void) {
     sleep_ms(800);
 
     // --- Agendamento ---
-    const uint32_t display_interval_ms = 2000; // atualiza display a cada 2s (tempo real)
+    const uint32_t display_interval_ms = 2000; // atualiza display a cada 2s
     const uint32_t log_interval_ms = 60 * 1000; // grava no SD a cada 60s
 
-    absolute_time_t next_display_time = make_timeout_time_ms(500); // 1ª atualização em 0.5s
-    absolute_time_t next_log_time = make_timeout_time_ms(1000); // 1ª gravação em 1s (pode ajustar)
+    absolute_time_t next_display_time = make_timeout_time_ms(500);
+    absolute_time_t next_log_time = make_timeout_time_ms(1000);
 
     float last_temp = 0.0f;
     float last_hum  = 0.0f;
@@ -256,38 +275,25 @@ int main(void) {
     while (true) {
         absolute_time_t now = get_absolute_time();
 
-        // --- Atualização de display (tempo real) ---
+        // --- Atualização de display ---
         if (absolute_time_diff_us(now, next_display_time) >= 0) {
-            // lê sensor (usa a função que você já tem)
             if (AHT10_ReadTemperatureHumidity(&aht10, &last_temp, &last_hum)) {
-                // mostra no OLED (sem indicador de gravação)
                 display_values(last_temp, last_hum, false);
             } else {
-                // erro de leitura — mostra mensagem
-                ssd1306_clear();
-                ssd1306_draw_string(6, 20, "Erro leitura AHT10");
-                ssd1306_show();
+                display_alert("Erro leitura AHT10");
             }
-
-            // agenda próxima exibição
             next_display_time = delayed_by_ms(next_display_time, display_interval_ms);
         }
 
-        // --- Gravação no SD a cada 60s (usa última leitura disponível) ---
+        // --- Gravação no SD ---
         if (absolute_time_diff_us(now, next_log_time) >= 0) {
-            // grava utilizando last_temp / last_hum (se última leitura falhou, valores podem ser anteriores)
             log_data(last_temp, last_hum);
-
-            // mostra indicação rápida no OLED (1s)
-            display_values(last_temp, last_hum, true); // mostra "Gravando"
+            display_values(last_temp, last_hum, true);
             sleep_ms(1000);
-            display_values(last_temp, last_hum, false); // volta ao normal
-
-            // agenda próxima gravação
+            display_values(last_temp, last_hum, false);
             next_log_time = delayed_by_ms(next_log_time, log_interval_ms);
         }
 
-        // pequeno sleep para liberar CPU (ajusta se necessário)
         sleep_ms(50);
     }
 
