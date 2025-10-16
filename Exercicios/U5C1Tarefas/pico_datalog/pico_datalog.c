@@ -1,3 +1,12 @@
+/* -------------------------------------------------------------------------------------------------------------------------------------
+/ Projeto: Datalog AHT10 (Sensor de Temperatura e Umidade)
+/ Descrição: Este código lê a temperatura e umidade do sensor AHT10 e exibe os dados em um display OLED SSD1306,
+/ Salvando um histórico em um cartão microSD.
+/ Bibliotecas: aht10, ssd1306, FatFs_SPI
+/ Autor: José Adriano
+/ Data de Criação: 16/10/2025
+/----------------------------------------------------------------------------------------------------------------------------------------
+*/
 // main.c - Datalogger AHT10 -> SD card (log a cada 60s), OLED em tempo real
 #include <stdio.h>
 #include <string.h>
