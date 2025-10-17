@@ -10,10 +10,10 @@
 #include "mpu6050_i2c.h"
 #include "ssd1306.h"
 
-#define WIFI_SSID     "xxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxx"
+#define WIFI_SSID     "ITSelf"
+#define WIFI_PASSWORD "code2020"
 
-#define SERVER_IP   "192.168.1.11"
+#define SERVER_IP   "192.168.1.157"
 #define SERVER_PORT 12345
 
 #define I2C_MPU i2c0
