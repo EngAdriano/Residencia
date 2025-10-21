@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
 #include "pico/time.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
@@ -8,14 +9,35 @@
 #include "fonts.h"
 #include "testimg.h"
 
+#define WIFI_SSID   "ITSelf"
+#define WIFI_PASSWORD   "code2020"
+
 void DemoTFT(void);
 uint8_t r=0;
 
 int main()
 {
-
-    //intialize stdio
     stdio_init_all();
+/*
+    // Initialise the Wi-Fi chip
+    if (cyw43_arch_init()) {
+        printf("Wi-Fi init failed\n");
+        return -1;
+    }
+
+    // Enable wifi station
+    cyw43_arch_enable_sta_mode();
+
+    printf("Connecting to Wi-Fi...\n");
+    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+        printf("failed to connect.\n");
+        return 1;
+    } else {
+        printf("Connected.\n");
+        // Read the ip address in a human readable way
+        uint8_t *ip_address = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
+        printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
+    }*/
 
     // intialize the SPI0 of Raspberry Pi
         // This example will use SPI0 at 4MHz.
@@ -35,15 +57,21 @@ int main()
     // call the LCD initialization
     ST7735_Init();
 
+    ST7735_SetRotation(1);
+    ST7735_FillScreen(ST7735_BLACK);
+    ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
+    ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+    ST7735_DrawString(12, 6*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
 
-    while(1)
-    {
-        DemoTFT();
+    while (true) {
+        ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
+        ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+        ST7735_DrawString(12, 6*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
+        sleep_ms(1000);
+        ST7735_DrawString(12, 6*10, "               ", Font_11x18, ST7735_RED, ST7735_BLACK);
+         sleep_ms(1000);
     }
-
-    return 0;
 }
-
 
 void DemoTFT(void)
 {
@@ -84,42 +112,42 @@ void DemoTFT(void)
 
 	// Check fonts
 	ST7735_FillScreen(ST7735_BLACK);
-	ST7735_DrawString(0, 0, "Font_7x10, red on black, lorem ipsum dolor sit amet", Font_7x10, ST7735_RED, ST7735_BLACK);
-	ST7735_DrawString(0, 3*10, "Font_11x18, green, lorem ipsum", Font_11x18, ST7735_GREEN, ST7735_BLACK);
+	ST7735_DrawString(0, 0, "Font_7x10, Embarcatech", Font_7x10, ST7735_RED, ST7735_BLACK);
+	ST7735_DrawString(0, 3*10, "Font_11x18, Eng. Adriano", Font_11x18, ST7735_GREEN, ST7735_BLACK);
 	ST7735_DrawString(0, 3*10+3*18, "Font_16x26", Font_16x26, ST7735_BLUE, ST7735_BLACK);
 	sleep_ms(2000);
 
 	// Check colors
 	ST7735_FillScreen(ST7735_BLACK);
-	ST7735_DrawString(0, 0, "BLACK", Font_11x18, ST7735_WHITE, ST7735_BLACK);
+	ST7735_DrawString(0, 0, "PRETO", Font_11x18, ST7735_WHITE, ST7735_BLACK);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_BLUE);
-	ST7735_DrawString(0, 0, "BLUE", Font_11x18, ST7735_BLACK, ST7735_BLUE);
+	ST7735_DrawString(0, 0, "AZUL", Font_11x18, ST7735_BLACK, ST7735_BLUE);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_RED);
-	ST7735_DrawString(0, 0, "RED", Font_11x18, ST7735_BLACK, ST7735_RED);
+	ST7735_DrawString(0, 0, "VERMELHO", Font_11x18, ST7735_BLACK, ST7735_RED);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_GREEN);
-	ST7735_DrawString(0, 0, "GREEN", Font_11x18, ST7735_BLACK, ST7735_GREEN);
+	ST7735_DrawString(0, 0, "VERDE", Font_11x18, ST7735_BLACK, ST7735_GREEN);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_CYAN);
-	ST7735_DrawString(0, 0, "CYAN", Font_11x18, ST7735_BLACK, ST7735_CYAN);
+	ST7735_DrawString(0, 0, "AZULADO CLARO", Font_11x18, ST7735_BLACK, ST7735_CYAN);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_MAGENTA);
-	ST7735_DrawString(0, 0, "MAGENTA", Font_11x18, ST7735_BLACK, ST7735_MAGENTA);
+	ST7735_DrawString(0, 0, "ROSA", Font_11x18, ST7735_BLACK, ST7735_MAGENTA);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_YELLOW);
-	ST7735_DrawString(0, 0, "YELLOW", Font_11x18, ST7735_BLACK, ST7735_YELLOW);
+	ST7735_DrawString(0, 0, "AMARELO", Font_11x18, ST7735_BLACK, ST7735_YELLOW);
 	sleep_ms(500);
 
 	ST7735_FillScreen(ST7735_WHITE);
-	ST7735_DrawString(0, 0, "WHITE", Font_11x18, ST7735_BLACK, ST7735_WHITE);
+	ST7735_DrawString(0, 0, "BRANCO", Font_11x18, ST7735_BLACK, ST7735_WHITE);
 	sleep_ms(500);
 
 	// Draw circles
