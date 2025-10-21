@@ -18,7 +18,7 @@ uint8_t r=0;
 int main()
 {
     stdio_init_all();
-/*
+
     // Initialise the Wi-Fi chip
     if (cyw43_arch_init()) {
         printf("Wi-Fi init failed\n");
@@ -37,7 +37,7 @@ int main()
         // Read the ip address in a human readable way
         uint8_t *ip_address = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
         printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
-    }*/
+    }
 
     // intialize the SPI0 of Raspberry Pi
         // This example will use SPI0 at 4MHz.
@@ -59,9 +59,6 @@ int main()
 
     ST7735_SetRotation(1);
     ST7735_FillScreen(ST7735_BLACK);
-    ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
-    ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
-    ST7735_DrawString(12, 6*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
 
     while (true) {
         ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
