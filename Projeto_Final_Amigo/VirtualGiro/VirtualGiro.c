@@ -189,6 +189,7 @@ int main() {
         printf("Erro criando mutex ou fila\n");
         return -1;
     }
+    
 
     // ----- Criar tasks -----
     xTaskCreate(vTaskMPU6050, "MPU6050", 512, NULL, 2, NULL);
