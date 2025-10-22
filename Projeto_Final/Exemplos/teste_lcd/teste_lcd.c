@@ -67,6 +67,10 @@ int main()
     while (true) {
         ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
         ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+		for(int x = 0; x < ST7735_GetWidth(); x++)
+		{
+			ST7735_DrawPixel(x, 3*10+3, ST7735_WHITE);
+		}
         ST7735_DrawString(20, 5*10, "IP: 192.168.1.227", Font_7x10, ST7735_GREEN, ST7735_BLACK);
         ST7735_DrawString(12, 8*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
         sleep_ms(1000);
