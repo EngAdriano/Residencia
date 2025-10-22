@@ -9,6 +9,10 @@
 #include "fonts.h"
 #include "testimg.h"
 
+// Casa
+//#define WIFI_SSID   "Lu e Deza"
+//#define WIFI_PASSWORD   "liukin1208"
+// Laboratório
 #define WIFI_SSID   "ITSelf"
 #define WIFI_PASSWORD   "code2020"
 
