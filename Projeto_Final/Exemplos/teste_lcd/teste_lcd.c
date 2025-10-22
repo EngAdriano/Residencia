@@ -70,9 +70,9 @@ int main()
 		ST7735_DrawLine(0, 33, ST7735_GetWidth(), 33, ST7735_YELLOW);
         ST7735_DrawString(20, 5*10, "IP: 192.168.1.227", Font_7x10, ST7735_GREEN, ST7735_BLACK);
         ST7735_DrawString(12, 8*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
-        sleep_ms(1000);
+        sleep_ms(500);
         ST7735_DrawString(12, 8*10, "               ", Font_11x18, ST7735_RED, ST7735_BLACK);
-         sleep_ms(1000);
+         sleep_ms(500);
     }
 }
 
