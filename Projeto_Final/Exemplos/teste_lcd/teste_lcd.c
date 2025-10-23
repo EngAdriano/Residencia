@@ -68,7 +68,9 @@ int main()
     ST7735_SetRotation(1);
     ST7735_FillScreen(ST7735_BLACK);
 
-	int flag = 0;
+	int r = 0;
+	int g = 0;
+	int b = 0;
 
     while (true) {
 		uint16_t cor = 0;
@@ -77,19 +79,29 @@ int main()
         ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
 		ST7735_DrawLine(0, 33, ST7735_GetWidth(), 33, ST7735_YELLOW);
 
-		//if (flag = 0){
-			cor = rgb888_convert_rgb565(0, 7, 224);
+			cor = rgb888_convert_rgb565(r, g, 200);
 			printf("Valor em decimal: %d\n", cor);
+			printf("Valor em decimal: %d\n", r);
 		 	// Para letras maiúsculas (A-F), use `%04X`.
   			printf("Valor em hexadecimal (maiúsculo): %04X\n", cor);
-			flag = 1;
-		//}
-		
+			
         ST7735_DrawString(20, 5*10, "IP: 192.168.1.227", Font_7x10, cor, ST7735_BLACK);
         ST7735_DrawString(12, 8*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
         sleep_ms(500);
         ST7735_DrawString(12, 8*10, "               ", Font_11x18, ST7735_RED, ST7735_BLACK);
          sleep_ms(500);
+
+		 r = r + 10;
+
+		 if(r >= 256)
+		 {
+			r = 0;
+			g = g + 10;
+			if(g >= 256)
+			{
+				g = 0;
+			}
+		 }
     }
 }
 
