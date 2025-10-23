@@ -16,8 +16,12 @@
 #define WIFI_SSID   "ITSelf"
 #define WIFI_PASSWORD   "code2020"
 
+// Protótipo das funções
+uint16_t rgb888_convert_rgb565(uint8_t r, uint8_t g, uint8_t b);
 void DemoTFT(void);
-uint8_t r=0;
+
+//
+uint8_t rotat=0;
 
 int main()
 {
@@ -64,11 +68,24 @@ int main()
     ST7735_SetRotation(1);
     ST7735_FillScreen(ST7735_BLACK);
 
+	int flag = 0;
+
     while (true) {
+		uint16_t cor = 0;
+
         ST7735_DrawString(20, 0, "EMBARCATECH", Font_11x18, ST7735_BLUE, ST7735_BLACK);
         ST7735_DrawString(35, 2*10, "Projeto Final", Font_7x10, ST7735_GREEN, ST7735_BLACK);
 		ST7735_DrawLine(0, 33, ST7735_GetWidth(), 33, ST7735_YELLOW);
-        ST7735_DrawString(20, 5*10, "IP: 192.168.1.227", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+
+		//if (flag = 0){
+			cor = rgb888_convert_rgb565(0, 7, 224);
+			printf("Valor em decimal: %d\n", cor);
+		 	// Para letras maiúsculas (A-F), use `%04X`.
+  			printf("Valor em hexadecimal (maiúsculo): %04X\n", cor);
+			flag = 1;
+		//}
+		
+        ST7735_DrawString(20, 5*10, "IP: 192.168.1.227", Font_7x10, cor, ST7735_BLACK);
         ST7735_DrawString(12, 8*10, "EM CONSTRUCAO", Font_11x18, ST7735_RED, ST7735_BLACK);
         sleep_ms(500);
         ST7735_DrawString(12, 8*10, "               ", Font_11x18, ST7735_RED, ST7735_BLACK);
@@ -76,9 +93,23 @@ int main()
     }
 }
 
+
+uint16_t rgb888_convert_rgb565(uint8_t r, uint8_t g, uint8_t b) {
+	uint16_t cor_16bit = 0;
+
+	// Extrai os bits da cor vermelha e monta na variável de 16 bits
+	cor_16bit |= ((r >> 3) << 11);
+	// Extrai os bits da cor verde e monta na variável de 16 bits
+	cor_16bit |= ((g >> 2) << 5);
+	// Extrai os bits da cor azul e monta na variável de 16 bits
+	cor_16bit |= (b >> 3);
+
+	return cor_16bit;
+}
+
 void DemoTFT(void)
 {
-	ST7735_SetRotation(r);
+	ST7735_SetRotation(rotat);
 
 	ST7735_FillScreen(ST7735_BLACK);
 
@@ -169,5 +200,5 @@ void DemoTFT(void)
 	ST7735_DrawImage(10, 30, 100, 100, (uint16_t*) test_img);
 	sleep_ms(3000);
 
-	r++;
+	rotat++;
 }
