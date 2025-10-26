@@ -70,3 +70,7 @@ target_link_libraries(energy_monitoring
 
 pico_add_extra_outputs(energy_monitoring)
 
+# Print memory usage after build
+target_link_options(energy_monitoring PRIVATE
+        -Wl,--print-memory-usage
+)
