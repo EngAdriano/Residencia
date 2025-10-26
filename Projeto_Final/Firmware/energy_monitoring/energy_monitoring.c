@@ -41,31 +41,8 @@
 
 volatile bool wifi_connected = false;
 
-
-// ---- Task: reconexão Wi-Fi ----
-void vTaskWiFiReconnect(void *pvParameters) {
-    while (1) {
-        struct netif *netif = &cyw43_state.netif[0];
-        if (ip4_addr_isany_val(netif->ip_addr)) {
-            wifi_connected = false;
-            printf("Wi-Fi desconectado. Tentando reconectar...\n");
-
-            if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
-                                                   CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-                printf("Falha na reconexão.\n");
-            } else {
-                wifi_connected = true;
-                ip4_addr_t ip = netif->ip_addr;
-                printf("Reconectado! IP: %s\n", ip4addr_ntoa(&ip));
-            }
-        } else {
-            wifi_connected = true;
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(10000)); // Verifica a cada 10 segundos
-    }
-}
-
+// Prototipos de funções
+void vTaskWiFiReconnect(void *pvParameters);
 
 
 int main()
@@ -133,5 +110,29 @@ int main()
 
     while (true) {
         // Nada a fazer aqui, tudo é gerenciado pelas tasks 
+    }
+}
+
+// ---- Task: reconexão Wi-Fi ----
+void vTaskWiFiReconnect(void *pvParameters) {
+    while (1) {
+        struct netif *netif = &cyw43_state.netif[0];
+        if (ip4_addr_isany_val(netif->ip_addr)) {
+            wifi_connected = false;
+            printf("Wi-Fi desconectado. Tentando reconectar...\n");
+
+            if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+                                                   CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+                printf("Falha na reconexão.\n");
+            } else {
+                wifi_connected = true;
+                ip4_addr_t ip = netif->ip_addr;
+                printf("Reconectado! IP: %s\n", ip4addr_ntoa(&ip));
+            }
+        } else {
+            wifi_connected = true;
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(10000)); // Verifica a cada 10 segundos
     }
 }
