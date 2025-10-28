@@ -25,19 +25,19 @@
 #define PIN_MOSI 19
 
 // I2C definições
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+#define I2C_PORT i2c1
+#define I2C_SDA 2
+#define I2C_SCL 3
 
 
 // UART definições
-#define UART_ID uart1
-#define BAUD_RATE 115200
+#define UART_ID uart0
+#define BAUD_RATE 4800
 
-// Usar pinos 4 e 5 para UART1
+// Usar pinos 0 e 1 para UART0
 // Os pinos podem ser alterados, mas devem ser pinos UART válidos
-#define UART_TX_PIN 4
-#define UART_RX_PIN 5
+#define UART_TX_PIN 0
+#define UART_RX_PIN 1
 
 volatile bool wifi_connected = false;
 
