@@ -160,10 +160,10 @@ void display_task(void *pv)
         xSemaphoreGive(xStatusMutex);
 
         ssd1306_clear();
-        ssd1306_draw_string(0, 0, "Pico W FreeRTOS");
-        ssd1306_draw_string(0, 15, "Status:");
+        ssd1306_draw_string(20, 0, "Pico W FreeRTOS");
+        ssd1306_draw_string(0, 15, "Status: ");
         ssd1306_draw_string(50, 15, st);
-        ssd1306_draw_string(0, 35, "IP:");
+        ssd1306_draw_string(0, 35, "IP: ");
         ssd1306_draw_string(20, 35, ip);
         ssd1306_show();
     }
