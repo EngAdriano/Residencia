@@ -38,7 +38,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(template_FreeRTOS template_FreeRTOS.c )
+add_executable(template_FreeRTOS 
+        template_FreeRTOS.c 
+        lib/ssd1306/ssd1306.c
+        )
 
 pico_set_program_name(template_FreeRTOS "template_FreeRTOS")
 pico_set_program_version(template_FreeRTOS "0.1")
@@ -57,11 +60,14 @@ target_link_libraries(template_FreeRTOS
 # Add the standard include files to the build
 target_include_directories(template_FreeRTOS PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
 )
 
 # Add any user requested libraries
 target_link_libraries(template_FreeRTOS 
         pico_cyw43_arch_lwip_threadsafe_background
+        hardware_i2c
         )
 
 pico_add_extra_outputs(template_FreeRTOS)
