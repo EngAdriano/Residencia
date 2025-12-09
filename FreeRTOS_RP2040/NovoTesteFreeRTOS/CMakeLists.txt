@@ -37,7 +37,11 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(NovoTesteFreeRTOS NovoTesteFreeRTOS.c )
+add_executable(NovoTesteFreeRTOS 
+        NovoTesteFreeRTOS.c
+        lib/aht10/aht10.c
+        lib/ssd1306/ssd1306.c
+)
 
 pico_set_program_name(NovoTesteFreeRTOS "NovoTesteFreeRTOS")
 pico_set_program_version(NovoTesteFreeRTOS "0.1")
@@ -56,11 +60,15 @@ target_link_libraries(NovoTesteFreeRTOS
 # Add the standard include files to the build
 target_include_directories(NovoTesteFreeRTOS PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/lib
+        ${CMAKE_CURRENT_LIST_DIR}/lib/aht10
+        ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306
 )
 
 # Add any user requested libraries
-target_link_libraries(NovoTesteFreeRTOS 
+target_link_libraries(NovoTesteFreeRTOS
         pico_cyw43_arch_lwip_threadsafe_background
+        hardware_i2c
         )
 
 pico_add_extra_outputs(NovoTesteFreeRTOS)
