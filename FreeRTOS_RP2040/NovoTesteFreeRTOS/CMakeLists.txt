@@ -39,6 +39,7 @@ pico_sdk_init()
 
 add_executable(NovoTesteFreeRTOS 
         NovoTesteFreeRTOS.c
+        #lib/aht10/aht10_rtos.c
         lib/aht10/aht10.c
         lib/ssd1306/ssd1306.c
 )
