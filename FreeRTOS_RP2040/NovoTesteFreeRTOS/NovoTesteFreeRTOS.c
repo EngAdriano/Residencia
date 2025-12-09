@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "pico/cyw43_arch.h"
 
 // FreeRTOS
 #include "FreeRTOS.h"
@@ -12,7 +13,7 @@
 #include "ssd1306.h"    
 
 // =======================================================
-// CONFIGURAÇÃO I2C
+// CONFIGURAÇÃO DE PINOS E CONSTANTES
 // =======================================================
 #define I2C_PORT_AHT  i2c0
 #define SDA_AHT       0
@@ -21,6 +22,9 @@
 #define I2C_PORT_OLED i2c1
 #define SDA_OLED      14
 #define SCL_OLED      15
+
+#define WIFI_SSID     "Lu e Deza"
+#define WIFI_PASSWORD "liukin1208"
 
 // =======================================================
 // QUEUE DE COMUNICAÇÃO ENTRE AS TASKS
@@ -178,6 +182,53 @@ void TaskSerial(void *pv)
 }
 
 // =======================================================
+// TASK — WIFI (CYW43)
+// =======================================================
+void TaskWiFi(void *pv)
+{
+    printf("Inicializando Wi-Fi...\n");
+
+    if (cyw43_arch_init()) {
+        printf("ERRO: falha ao inicializar o CYW43!\n");
+        while (1) vTaskDelay(1000);
+    }
+
+    cyw43_arch_enable_sta_mode();
+
+    printf("Conectando ao Wi-Fi: %s...\n", WIFI_SSID);
+
+    while (true)
+    {
+        int result = cyw43_arch_wifi_connect_timeout_ms(
+            WIFI_SSID,
+            WIFI_PASSWORD,
+            CYW43_AUTH_WPA2_AES_PSK,
+            10000   // 10s timeout
+        );
+
+        if (result == 0) {
+            printf("Wi-Fi conectado!\n");
+            break;
+        } else {
+            printf("Falha ao conectar (%d). Tentando novamente...\n", result);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(5000)); // tenta novamente a cada 5s
+    }
+
+    // Loop principal Wi-Fi
+    while (true)
+    {
+        // Você pode futuramente colocar MQTT aqui
+        // Por enquanto só confirma que está vivo
+
+        printf("Wi-Fi OK. IP: %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+// =======================================================
 // MAIN — CONFIGURA SISTEMA E INICIA FREERTOS
 // =======================================================
 int main()
@@ -217,6 +268,8 @@ int main()
     xTaskCreate(TaskSensor,  "Sensor",  1024, NULL, 3, NULL);
     xTaskCreate(TaskDisplay, "Display", 1024, NULL, 1, NULL);
     xTaskCreate(TaskSerial,  "Serial",  1024, NULL, 1, NULL);
+    xTaskCreate(TaskWiFi,    "WiFi",    2048, NULL, 4, NULL);  // maior stack
+
 
     // -------------------
     // INICIA O FREERTOS
