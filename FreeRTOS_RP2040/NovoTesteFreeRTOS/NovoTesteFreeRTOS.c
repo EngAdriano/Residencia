@@ -8,7 +8,7 @@
 #include "task.h"
 #include "queue.h"
 
-// Bibliotecas enviadas pelo usuário
+// Bibliotecas hardware externas
 #include "aht10.h"      
 #include "ssd1306.h"    
 
@@ -27,13 +27,16 @@
 #define WIFI_PASSWORD "liukin1208"
 
 // =======================================================
-// QUEUE DE COMUNICAÇÃO ENTRE AS TASKS
+// ESTRUTURA DE DADOS PARA A FILA
 // =======================================================
 typedef struct {
     float temperature;
     float humidity;
 } SensorData_t;
 
+// =======================================================
+// QUEUE DE COMUNICAÇÃO ENTRE AS TASKS
+// =======================================================
 QueueHandle_t xSensorQueue;
 
 // =======================================================
