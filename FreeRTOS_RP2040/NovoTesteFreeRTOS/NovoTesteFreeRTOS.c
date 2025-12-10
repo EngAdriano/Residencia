@@ -23,8 +23,8 @@
 #define SDA_OLED      14
 #define SCL_OLED      15
 
-#define WIFI_SSID     "Lu e Deza"
-#define WIFI_PASSWORD "liukin1208"
+#define WIFI_SSID     "xxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxx"
 
 // =======================================================
 // ESTRUTURA DE DADOS PARA A FILA
@@ -38,6 +38,68 @@ typedef struct {
 // QUEUE DE COMUNICAÇÃO ENTRE AS TASKS
 // =======================================================
 QueueHandle_t xSensorQueue;
+
+// =======================================================
+// PROTÓTIPOS DAS TASKS E FUNÇÕES
+// =======================================================
+void TaskSensor(void *pv);
+void TaskDisplay(void *pv);
+void TaskSerial(void *pv);
+void TaskWiFi(void *pv);
+int i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len);
+int i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len);
+void delay_ms_wrapper(uint32_t ms);
+
+// =======================================================
+// MAIN — CONFIGURA SISTEMA E INICIA FREERTOS
+// =======================================================
+int main()
+{
+    stdio_init_all();
+
+    // -------------------
+    // I2C DO SENSOR
+    // -------------------
+    i2c_init(I2C_PORT_AHT, 100000);
+    gpio_set_function(SDA_AHT, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_AHT, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_AHT);
+    gpio_pull_up(SCL_AHT);
+
+    // -------------------
+    // I2C DO OLED
+    // -------------------
+    i2c_init(I2C_PORT_OLED, 400000);
+    gpio_set_function(SDA_OLED, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_OLED, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_OLED);
+    gpio_pull_up(SCL_OLED);
+
+    // Inicializa OLED
+    ssd1306_init(I2C_PORT_OLED);
+
+    // -------------------
+    // CRIA A QUEUE
+    // -------------------
+    xSensorQueue = xQueueCreate(1, sizeof(SensorData_t));
+    xQueueReset(xSensorQueue);
+
+    // -------------------
+    // CRIA AS TASKS
+    // -------------------
+    xTaskCreate(TaskSensor,  "Sensor",  1024, NULL, 3, NULL);
+    xTaskCreate(TaskDisplay, "Display", 1024, NULL, 1, NULL);
+    xTaskCreate(TaskSerial,  "Serial",  1024, NULL, 1, NULL);
+    xTaskCreate(TaskWiFi,    "WiFi",    2048, NULL, 4, NULL);  // maior stack
+
+
+    // -------------------
+    // INICIA O FREERTOS
+    // -------------------
+    vTaskStartScheduler();
+
+    while (true) {}
+}
 
 // =======================================================
 // WRAPPERS PARA O DRIVER DO AHT10
@@ -173,6 +235,7 @@ void TaskSerial(void *pv)
 
     while (1)
     {
+        // Lê SEM CONSUMIR a fila
         if (xQueuePeek(xSensorQueue, &data, portMAX_DELAY))
         {
             printf("Temperatura: %.2f C | Umidade: %.2f %%\n",
@@ -229,55 +292,4 @@ void TaskWiFi(void *pv)
 
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
-}
-
-// =======================================================
-// MAIN — CONFIGURA SISTEMA E INICIA FREERTOS
-// =======================================================
-int main()
-{
-    stdio_init_all();
-
-    // -------------------
-    // I2C DO SENSOR
-    // -------------------
-    i2c_init(I2C_PORT_AHT, 100000);
-    gpio_set_function(SDA_AHT, GPIO_FUNC_I2C);
-    gpio_set_function(SCL_AHT, GPIO_FUNC_I2C);
-    gpio_pull_up(SDA_AHT);
-    gpio_pull_up(SCL_AHT);
-
-    // -------------------
-    // I2C DO OLED
-    // -------------------
-    i2c_init(I2C_PORT_OLED, 400000);
-    gpio_set_function(SDA_OLED, GPIO_FUNC_I2C);
-    gpio_set_function(SCL_OLED, GPIO_FUNC_I2C);
-    gpio_pull_up(SDA_OLED);
-    gpio_pull_up(SCL_OLED);
-
-    // Inicializa OLED
-    ssd1306_init(I2C_PORT_OLED);
-
-    // -------------------
-    // CRIA A QUEUE
-    // -------------------
-    xSensorQueue = xQueueCreate(1, sizeof(SensorData_t));
-    xQueueReset(xSensorQueue);
-
-    // -------------------
-    // CRIA AS TASKS
-    // -------------------
-    xTaskCreate(TaskSensor,  "Sensor",  1024, NULL, 3, NULL);
-    xTaskCreate(TaskDisplay, "Display", 1024, NULL, 1, NULL);
-    xTaskCreate(TaskSerial,  "Serial",  1024, NULL, 1, NULL);
-    xTaskCreate(TaskWiFi,    "WiFi",    2048, NULL, 4, NULL);  // maior stack
-
-
-    // -------------------
-    // INICIA O FREERTOS
-    // -------------------
-    vTaskStartScheduler();
-
-    while (true) {}
 }
