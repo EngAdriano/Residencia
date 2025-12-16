@@ -8,112 +8,100 @@
 #include "task.h"
 #include "queue.h"
 
-// Bibliotecas hardware externas
-#include "aht10.h"      
-#include "ssd1306.h"    
+// Drivers
+#include "aht10.h"
+#include "bh1750.h"
+#include "ssd1306.h"
+
+// lwIP
+#include "lwip/ip4_addr.h"
 
 // =======================================================
 // CONFIGURAÇÃO DE PINOS E CONSTANTES
 // =======================================================
-#define I2C_PORT_AHT  i2c0
-#define SDA_AHT       0
-#define SCL_AHT       1
+#define I2C_PORT_AHT   i2c0
+#define SDA_AHT        0
+#define SCL_AHT        1
 
-#define I2C_PORT_OLED i2c1
-#define SDA_OLED      14
-#define SCL_OLED      15
+#define I2C_PORT_OLED  i2c1
+#define SDA_OLED       14
+#define SCL_OLED       15
 
-#define WIFI_SSID     "xxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxx"
+#define WIFI_SSID      "Lu e Deza"
+#define WIFI_PASSWORD  "liukin1208"
 
 // =======================================================
-// ESTRUTURA DE DADOS PARA A FILA
+// ESTRUTURA DE DADOS DOS SENSORES
 // =======================================================
 typedef struct {
     float temperature;
     float humidity;
+    float lux;
 } SensorData_t;
 
-// =======================================================
-// QUEUE DE COMUNICAÇÃO ENTRE AS TASKS
 // =======================================================
 QueueHandle_t xSensorQueue;
 
 // =======================================================
-// PROTÓTIPOS DAS TASKS E FUNÇÕES
+// PROTÓTIPOS
 // =======================================================
 void TaskSensor(void *pv);
 void TaskDisplay(void *pv);
 void TaskSerial(void *pv);
 void TaskWiFi(void *pv);
-int i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len);
-int i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len);
+
+int  i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len);
+int  i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len);
 void delay_ms_wrapper(uint32_t ms);
 
 // =======================================================
-// MAIN — CONFIGURA SISTEMA E INICIA FREERTOS
+// MAIN
 // =======================================================
-int main()
+int main(void)
 {
     stdio_init_all();
 
-    // -------------------
-    // I2C DO SENSOR
-    // -------------------
+    // ---------- I2C SENSOR ----------
     i2c_init(I2C_PORT_AHT, 100000);
     gpio_set_function(SDA_AHT, GPIO_FUNC_I2C);
     gpio_set_function(SCL_AHT, GPIO_FUNC_I2C);
     gpio_pull_up(SDA_AHT);
     gpio_pull_up(SCL_AHT);
 
-    // -------------------
-    // I2C DO OLED
-    // -------------------
+    // ---------- I2C OLED ----------
     i2c_init(I2C_PORT_OLED, 400000);
     gpio_set_function(SDA_OLED, GPIO_FUNC_I2C);
     gpio_set_function(SCL_OLED, GPIO_FUNC_I2C);
     gpio_pull_up(SDA_OLED);
     gpio_pull_up(SCL_OLED);
 
-    // Inicializa OLED
     ssd1306_init(I2C_PORT_OLED);
 
-    // -------------------
-    // CRIA A QUEUE
-    // -------------------
+    // ---------- QUEUE ----------
     xSensorQueue = xQueueCreate(1, sizeof(SensorData_t));
-    xQueueReset(xSensorQueue);
 
-    // -------------------
-    // CRIA AS TASKS
-    // -------------------
+    // ---------- TASKS ----------
     xTaskCreate(TaskSensor,  "Sensor",  1024, NULL, 3, NULL);
     xTaskCreate(TaskDisplay, "Display", 1024, NULL, 1, NULL);
     xTaskCreate(TaskSerial,  "Serial",  1024, NULL, 1, NULL);
-    xTaskCreate(TaskWiFi,    "WiFi",    2048, NULL, 4, NULL);  // maior stack
+    xTaskCreate(TaskWiFi,    "WiFi",    3072, NULL, 4, NULL);
 
-
-    // -------------------
-    // INICIA O FREERTOS
-    // -------------------
     vTaskStartScheduler();
 
     while (true) {}
 }
 
 // =======================================================
-// WRAPPERS PARA O DRIVER DO AHT10
+// WRAPPERS AHT10
 // =======================================================
 int i2c_write_wrapper(uint8_t addr, const uint8_t *data, uint16_t len)
 {
-    int r = i2c_write_blocking(I2C_PORT_AHT, addr, data, len, false);
-    return (r < 0) ? -1 : 0;
+    return (i2c_write_blocking(I2C_PORT_AHT, addr, data, len, false) < 0) ? -1 : 0;
 }
 
 int i2c_read_wrapper(uint8_t addr, uint8_t *data, uint16_t len)
 {
-    int r = i2c_read_blocking(I2C_PORT_AHT, addr, data, len, false);
-    return (r < 0) ? -1 : 0;
+    return (i2c_read_blocking(I2C_PORT_AHT, addr, data, len, false) < 0) ? -1 : 0;
 }
 
 void delay_ms_wrapper(uint32_t ms)
@@ -122,7 +110,7 @@ void delay_ms_wrapper(uint32_t ms)
 }
 
 // =======================================================
-// TASK — SENSOR AHT10
+// TASK SENSOR (AHT10 + BH1750)
 // =======================================================
 void TaskSensor(void *pv)
 {
@@ -135,89 +123,58 @@ void TaskSensor(void *pv)
     };
 
     printf("Inicializando AHT10...\n");
-
     if (!AHT10_Init(&aht10)) {
-        printf("FALHA ao inicializar AHT10!\n");
-        while (1) vTaskDelay(1000);
+        printf("ERRO AHT10\n");
+        vTaskDelete(NULL);
     }
 
-    printf("AHT10 pronto!\n");
+    printf("Inicializando BH1750...\n");
+    bh1750_init(I2C_PORT_AHT);
 
     while (1)
     {
-        float t, h;
+        SensorData_t data = {0};
 
-        if (AHT10_ReadTemperatureHumidity(&aht10, &t, &h))
+        if (AHT10_ReadTemperatureHumidity(&aht10,
+                                          &data.temperature,
+                                          &data.humidity))
         {
-            SensorData_t data = {
-                .temperature = t,
-                .humidity = h
-            };
+            float lux = bh1750_read_lux(I2C_PORT_AHT);
+            data.lux = (lux >= 0.0f) ? lux : -1.0f;
 
-            // Mantém sempre o último valor (não bloqueia)
             xQueueOverwrite(xSensorQueue, &data);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(1000));  // Leitura a cada 1s
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 // =======================================================
-// TASK — DISPLAY OLED
+// TASK DISPLAY OLED
 // =======================================================
 void TaskDisplay(void *pv)
 {
     SensorData_t data;
-    char temp_str[16];
-    char hum_str[16];
+    char buf[16];
 
     while (1)
     {
-        // Lê SEM CONSUMIR a fila
         if (xQueuePeek(xSensorQueue, &data, portMAX_DELAY))
         {
-            float t = data.temperature;
-            float h = data.humidity;
-
             ssd1306_clear();
-            ssd1306_draw_string(32, 0, "Embarcatech");
-            ssd1306_draw_string(30, 10, "AHT10 Sensor");
+            ssd1306_draw_string(28, 0, "Embarcatech");
 
-            // ALERTA 1 — umidade alta
-            if (h > 70.0)
-            {
-                snprintf(hum_str, sizeof(hum_str), "%.2f %%", h);
-                ssd1306_draw_string(0, 20, "Umidade:");
-                ssd1306_draw_string(85, 20, hum_str);
-                ssd1306_draw_string(22, 40, "Acima de 70%");
-                ssd1306_draw_string(40, 50, "ATENCAO");
-                ssd1306_show();
-                vTaskDelay(pdMS_TO_TICKS(300));
-                continue;
-            }
+            snprintf(buf, sizeof(buf), "%.2f C", data.temperature);
+            ssd1306_draw_string(0, 16, "Temp:");
+            ssd1306_draw_string(80, 16, buf);
 
-            // ALERTA 2 — temperatura baixa
-            if (t < 20.0)
-            {
-                snprintf(temp_str, sizeof(temp_str), "%.2f C", t);
-                ssd1306_draw_string(0, 20, "Temp:");
-                ssd1306_draw_string(85, 20, temp_str);
-                ssd1306_draw_string(20, 40, "Abaixo de 20C");
-                ssd1306_draw_string(40, 50, "ATENCAO");
-                ssd1306_show();
-                vTaskDelay(pdMS_TO_TICKS(300));
-                continue;
-            }
+            snprintf(buf, sizeof(buf), "%.2f %%", data.humidity);
+            ssd1306_draw_string(0, 32, "Umid:");
+            ssd1306_draw_string(80, 32, buf);
 
-            // MODO NORMAL
-            snprintf(temp_str, sizeof(temp_str), "%.2f C", t);
-            snprintf(hum_str, sizeof(hum_str), "%.2f %%", h);
-
-            ssd1306_draw_string(0, 30, "Temperatura");
-            ssd1306_draw_string(85, 30, temp_str);
-
-            ssd1306_draw_string(0, 50, "Umidade");
-            ssd1306_draw_string(85, 50, hum_str);
+            snprintf(buf, sizeof(buf), "%.1f lx", data.lux);
+            ssd1306_draw_string(0, 48, "Luz:");
+            ssd1306_draw_string(80, 48, buf);
 
             ssd1306_show();
         }
@@ -227,7 +184,7 @@ void TaskDisplay(void *pv)
 }
 
 // =======================================================
-// TASK — SERIAL (UART DEBUG)
+// TASK SERIAL
 // =======================================================
 void TaskSerial(void *pv)
 {
@@ -235,61 +192,48 @@ void TaskSerial(void *pv)
 
     while (1)
     {
-        // Lê SEM CONSUMIR a fila
         if (xQueuePeek(xSensorQueue, &data, portMAX_DELAY))
         {
-            printf("Temperatura: %.2f C | Umidade: %.2f %%\n",
+            printf("T: %.2f C | H: %.2f %% | L: %.1f lx\n",
                    data.temperature,
-                   data.humidity);
+                   data.humidity,
+                   data.lux);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 // =======================================================
-// TASK — WIFI (CYW43)
+// TASK WIFI
 // =======================================================
 void TaskWiFi(void *pv)
 {
-    printf("Inicializando Wi-Fi...\n");
-
     if (cyw43_arch_init()) {
-        printf("ERRO: falha ao inicializar o CYW43!\n");
-        while (1) vTaskDelay(1000);
+        printf("Falha CYW43\n");
+        vTaskDelete(NULL);
     }
 
     cyw43_arch_enable_sta_mode();
 
-    printf("Conectando ao Wi-Fi: %s...\n", WIFI_SSID);
-
-    while (true)
+    while (1)
     {
-        int result = cyw43_arch_wifi_connect_timeout_ms(
-            WIFI_SSID,
-            WIFI_PASSWORD,
-            CYW43_AUTH_WPA2_AES_PSK,
-            10000   // 10s timeout
-        );
+        if (cyw43_arch_wifi_connect_timeout_ms(
+                WIFI_SSID,
+                WIFI_PASSWORD,
+                CYW43_AUTH_WPA2_AES_PSK,
+                10000) == 0)
+        {
+            const ip4_addr_t *ip =
+                &cyw43_state.netif[CYW43_ITF_STA].ip_addr;
 
-        if (result == 0) {
-            printf("Wi-Fi conectado!\n");
+            printf("Wi-Fi OK | IP: %s\n", ip4addr_ntoa(ip));
             break;
-        } else {
-            printf("Falha ao conectar (%d). Tentando novamente...\n", result);
         }
-
-        vTaskDelay(pdMS_TO_TICKS(5000)); // tenta novamente a cada 5s
-    }
-
-    // Loop principal Wi-Fi
-    while (true)
-    {
-        // Você pode futuramente colocar MQTT aqui
-        // Por enquanto só confirma que está vivo
-
-        printf("Wi-Fi OK. IP: %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
 
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
+
+    while (1)
+        vTaskDelay(pdMS_TO_TICKS(10000));
 }
