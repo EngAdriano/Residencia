@@ -18,7 +18,7 @@ int main()
     stdio_init_all();
 
     // intialize the SPI0 of Raspberry Pi
-        // This example will use SPI0 at 4MHz.
+    // This example will use SPI0 at 4MHz.
     spi_init(SPI_PORT, 4000 * 1000);
     //gpio_set_function(LCD_MISO, GPIO_FUNC_SPI);
     gpio_set_function(LCD_SCK, GPIO_FUNC_SPI);
