@@ -27,8 +27,8 @@
 #define SDA_OLED       14
 #define SCL_OLED       15
 
-#define WIFI_SSID      "Lu e Deza"
-#define WIFI_PASSWORD  "liukin1208"
+#define WIFI_SSID      "xxxxxxxxxxx"
+#define WIFI_PASSWORD  "xxxxxxxxxxx"
 
 // =======================================================
 // ESTRUTURA DE DADOS DOS SENSORES
