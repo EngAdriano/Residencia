@@ -6,8 +6,8 @@
 #include "queue.h"
 
 
-#define SSID "Lu e Deza"
-#define PASSWORD "liukin1208"
+#define SSID "xxxxxxxxxx"
+#define PASSWORD "xxxxxxxxxx"
 // =========================================
 // DEFINIÇÕES
 // =========================================
@@ -29,6 +29,7 @@ int main()
 {
     stdio_init_all();
 
+    
     // Initialise the Wi-Fi chip
     if (cyw43_arch_init()) {
         printf("Wi-Fi init failed\n");
