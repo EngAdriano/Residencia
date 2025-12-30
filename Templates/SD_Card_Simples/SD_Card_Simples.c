@@ -84,7 +84,7 @@ int main(void) {
         if (f_mount(&pSD->fatfs, pSD->pcName, 1) == FR_OK) {
             FIL f;
             if (f_open(&f, LOG_FILENAME, FA_OPEN_APPEND | FA_WRITE) == FR_OK) {
-                if (f_size(&f) == 0) f_printf(&f, "DataHora; Temperatura(C); Umidade(%%)\n");
+                if (f_size(&f) == 0) f_printf(&f, "DataHora;Temperatura(C);Umidade(%%)\n");
                 f_close(&f);
             }
             f_unmount(pSD->pcName);
@@ -155,7 +155,7 @@ static bool get_timestamp_string(char *buf, size_t len) {
     if (t != (time_t)-1) {
         struct tm *tm = localtime(&t);
         if (!tm) return false;
-        if (strftime(buf, len, "%Y-%m-%d %H:%M:%S", tm) == 0) return false;
+        if (strftime(buf, len, "%Y-%m-%d;%H:%M:%S", tm) == 0) return false;
         return true;
     } else {
         uint64_t ms = to_ms_since_boot(get_absolute_time());
